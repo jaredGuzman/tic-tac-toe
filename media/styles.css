@@ -14,7 +14,7 @@
 html {
     font-family: var(--font-medium);
     font-size: 20px;
-    background: var(--light-blue);
+    background: var(--off-white);
     color: var(--white)
 }
 
@@ -22,7 +22,23 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    height: 100%;
+    min-width: 100vw;
+    overflow-x: hidden;
+}
+
+header {
+    align-content: flex-start;
+    background-color: var(--off-white);
+    color: var(--dark-dark-blue);
+    display: flex;
+    justify-content: center;
+    height: 6rem;
+    margin-bottom: 1rem;
+    width: 100vw;
+}
+
+header>h1 {
+    margin: 1.5rem;
 }
 
 small {
@@ -31,21 +47,22 @@ small {
 
 .root {
     align-items: center;
-    background-color: var(--light-blue);
+    background-color: var(--off-white);
     display: grid;
     justify-content: center;
+    width: 100vw;
 }
 
 #gameboard {
-    background-color: var(--off-white);
-    border-radius: 16px;
+    background-color: var(--light-blue);
     box-shadow: rgba(0, 0, 0, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
+    box-sizing: border-box;
     color: var(--dark-dark-blue);
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    height: 300px;
-    padding: 64px;
-    width: 300px;
+    height: 100vw;
+    padding: 32px;
+    width: 100vw;
 }
 
 .game-tile {
@@ -92,4 +109,101 @@ small {
     border-right: 2px solid var(--dark-dark-blue);
 }
 
-@media only screen and (min-width: 600px) {}
+footer {
+    bottom: 0;
+    color: var(--dark-dark-blue);
+    display: relative;
+    height: 2rem;
+    margin-bottom: 1rem;
+    width: 100vw;
+}
+
+footer>p {
+    margin: 1rem;
+    text-align: center;
+}
+
+footer>p>a {
+    color: var(--dark-dark-blue);
+}
+
+.modal {
+    align-items: center;
+    display: grid;
+    background-color: rgba(5, 31, 38, 0.5);
+    justify-content: center;
+    position: absolute;
+    height: 100vh;
+    overflow: hidden;
+    width: 100vw;
+}
+
+.modal>div {
+    background-color: var(--off-white);
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
+    color: var(--dark-dark-blue);
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    max-width: 400px;
+    padding: 32px;
+}
+
+.init-options-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+
+/* Buttons to choose between 2 player or vs computer */
+
+.init-options-container>button {
+    background-color: var(--dark-blue);
+    border: none;
+    border-radius: 8px;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    color: var(--off-white);
+    margin-right: 16px;
+    padding: 8px;
+    transition-duration: 0.3s;
+}
+
+.init-options-container>button:hover {
+    background-color: var(--dark-dark-blue);
+    cursor: pointer;
+    transform: scale(1.1);
+    transition-duration: 0.3s;
+}
+
+.init-options-clicked {
+    padding: 8px;
+    background-color: var(--dark-dark-blue);
+    border: none;
+    border-radius: 8px;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    color: var(--off-white);
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media only screen and (min-width: 600px) {
+    #gameboard {
+        border-radius: 16px;
+        height: 300px;
+        padding: 64px;
+        width: 300px;
+    }
+}
+
+@media only screen and (min-width: 800px) {
+    #gameboard {
+        border-radius: 16px;
+        height: 420px;
+        padding: 64px;
+        width: 420px;
+    }
+}

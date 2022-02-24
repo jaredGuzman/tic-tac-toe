@@ -14,12 +14,41 @@
 </head>
 
 <body>
-    <header>Tic-Tac-Toe</header>
+    <div class="modal">
+        <div class="init-message">
+            <p>Let's play tic-tac-toe! Click a button below and fill out the info (optional) to get started.</p>
+            <div class="init-options-container">
+                <button class="init-options" id="two-player-button">2 Player</button>
+                <button class="init-options" id="one-player-button">vs. computer</button>
+            </div>
+            <div id="two-player-options hidden">
+                <form>
+                    <input type="text">
+                    <input type="text">
+                </form>
+            </div>
+            <div id="one-player-options hidden">
+
+            </div>
+
+        </div>
+        <div class="end-message hidden">
+            <p>
+                Hi there! this is just some placeholder text to fill the space. Lalalalala
+            </p>
+        </div>
+    </div>
+
+    <header>
+        <h1>A Little Game of Tic-Tac-Toe</h1>
+    </header>
     <main class="root">
         <div id="gameboard">
         </div>
     </main>
-    <footer></footer>
+    <footer>
+        <p>Little game app made by <a href="https://jaredguzman.com">Jared Guzman</a> following <a href="https://www.theodinproject.com/" target="_blank">The Odin Project</a></p>
+    </footer>
 
 </body>
 

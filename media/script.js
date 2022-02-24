@@ -1,7 +1,66 @@
-let GameBoard = (() => {
-    let gameBoard = []
+////////////////////////////////////////////////////////////////////////////
+//
+//    TODO:
+//     - Add documentation and explanatory comments to DisplayController
+//     - Update Player() to make it more discernable who is making moves.
+//          - maybe for now, have the computer make random playable moves
+//          - include custom 'marker' input for players (have comp default 
+//            to 'O' unless player wants to change it or make their marker 
+//            'O' [in that case make the marker default to 'X])
+//          - include name customization
+//     - Add an option to choose between pvp and p v comp
+//     - Add a message output of some sort, to allow for winning and tie 
+//       messages
+// 
+///////////////////////
 
-    // gameBoard objects format:
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////
+//
+//    GameBoard 
+// 
+//    The Module used to describe the abstract 'game board' of this game. 
+//    Generally, these functions do not need to be called on their own and
+//    are instead called by the DisplayController according to user input.
+//    Technically, you could play a whole game of tic-tac-toe in the 
+//    console using just these methods.
+//     
+//    It contains the following public methods:
+//
+//      currentGameBoard():
+//          - grabs the current game board and returns an array of objects 
+//            with the following keys and values:
+//              (0){
+//                  ID: (1),  -- used for adding the data-tile-number 
+//                      attribute
+//                  clicked: false,
+//                  player: 'unclicked', -- changes to the player's title
+//                  marker: 'unclicked' -- changes to the players' chosen 
+//                          marker
+//              }
+//      addMove():
+//          - adds a move to the gameboard.
+//          - Takes marker (Either 'X' or 'O'), pos (the reference to 
+//            data-tile-num), and player (the player's title)
+//      checkForWinOrTie():
+//          - checks current game board for a potential win or tie. 
+//          - called after every click and returns either 'X', 'O', 'tie', 
+//            or undefined 
+//            depending on the outcome
+//      reset():
+//          - resets the gameboard
+//          - called on displayController.ini()
+//    
+///////////////////////
+
+let GameBoard = (() => {
+    let gameBoard = [];
+
+    // gameBoard object format:
     // gameBoard = {
     //      {
     //          ID: 1, (index + 1)
@@ -12,7 +71,7 @@ let GameBoard = (() => {
     // }
 
 
-
+    // Initialize gameboard
     let init = () => {
         let initGameBoard = [];
         for (let i = 0; i < 9; i++) {
@@ -21,18 +80,22 @@ let GameBoard = (() => {
                 clicked: false,
                 player: 'unclicked',
                 marker: 'unclicked'
-            }
+            };
         }
         return initGameBoard;
     };
 
-
+    // Grabs current board and returns an array of objects
     let currentGameBoard = () => {
         return gameBoard;
-    }
+    };
 
+
+    // Add a move to the current game board.
     // 'pos' refers to the tile that is clicked, referenced by the data-tile-num attribute
-
+    // Takes marker (Either 'X' or 'O'), pos (the reference to data-tile-num), and 
+    // player (the player's title)
+    // e.g: Gameboard.addMove('X', 6, 'person')
     let addMove = (marker, pos, player) => {
         if (marker == 'X' || marker == 'O') {
             if (gameBoard[pos - 1].marker == 'unclicked') {
@@ -45,8 +108,9 @@ let GameBoard = (() => {
         } else {
             console.log('Cannot make that move - invalid move');
         }
-    }
+    };
 
+    // Winning combinations of any given game of tic-tac-toe for a 3x3 grid
     let winningCombos = {
         row1: [1, 2, 3],
         row2: [4, 5, 6],
@@ -56,15 +120,16 @@ let GameBoard = (() => {
         col3: [3, 6, 9],
         cross1: [1, 5, 9],
         cross2: [3, 5, 7],
-    }
+    };
 
+    // These are both pretty self explanatory
     let equalToX = (marker) => {
         if (marker == 'X') {
             return true;
         } else {
-            return false
+            return false;
         }
-    }
+    };
 
     let equalToO = (marker) => {
         if (marker == 'O') {
@@ -72,32 +137,28 @@ let GameBoard = (() => {
         } else {
             return false;
         }
-    }
+    };
 
-    let equalToEmpty = (marker) => {
-        if (marker == ' ') {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
+    // checks for win or tie  ( ͡° ͜ʖ ͡°)
+    // returns either 'X', 'O', 'tie', or undefined, depending on result
     let checkForWinOrTie = () => {
         for (let key in winningCombos) {
             let tileVals = [];
             winningCombos[key].forEach(element => {
-                tileVals.push(gameBoard[element - 1].marker);
-            })
+                    // takes the values of each object in the main array (at the winning combinations index corrected value eg 1, 2, 3 -> [0, 1, 2] and push them to the tileVals array for easier access
+                    tileVals.push(gameBoard[element - 1].marker);
+                })
+                // check tileVals for equality. If there is a match in any of these cases, it will result in a win. If there isn't, it will simply continue
             if (tileVals.every(equalToX)) {
-                // checks for an X win against winning combos
                 currentWinResult = 'X';
                 return currentWinResult;
             } else if (tileVals.every(equalToO)) {
-                // checks for an O win against winning combos
                 currentWinResult = 'O';
                 return currentWinResult;
             } else {
-                let unclickedArray = []
+                // checking for unclicked is a little harder because I want the object's marker value to be more descriptive than simply an empty string or ' '. This checks against all of the 'clicked' values of the objects in Gameboard.currentGameBoard() (the main storage array) and checks for a tie
+                let unclickedArray = [];
                 for (let index of gameBoard) {
                     if (index.marker == 'unclicked') {
                         unclickedArray.push(true);
@@ -105,19 +166,19 @@ let GameBoard = (() => {
                         unclickedArray.push(false);
                     }
                 }
-                if (unclickedArray.includes(false)) {
+                if (!unclickedArray.includes(false) && !unclickedArray.includes(true)) {
                     return 'tie';
                 }
             }
         }
-    }
+    };
 
+    // pretty self explanatory
     let reset = () => {
         gameBoard = init();
     }
 
     return {
-        gameBoard,
         currentGameBoard,
         addMove,
         checkForWinOrTie,
@@ -126,14 +187,30 @@ let GameBoard = (() => {
 })();
 
 
-// player is either 'computer' or 'person'
+////////////////////////////////////////////////////////////////////////////
+//
+//      Player
+// 
+//      A function factory that returns an object with a series of public 
+//      methods meant to emulate the player making actions on the page. This
+//      hasn't been fully developed yet, but this will be the primary way
+//      to make actual games happen, mainly by differentiating between the 
+//      players.
+//
+//      Includes the following public methods:
+// 
+//          makeMove
+//          title
+//          marker
+//
+///////////////////////
+
 const Player = (player, playerMarkerChoice) => {
 
     let turn, marker;
 
     let playerChoice = playerMarkerChoice;
 
-    // logic to change the title of the 
     if (player == 'person' ||
         player == 'computer') {
         title = player;
@@ -162,9 +239,13 @@ const Player = (player, playerMarkerChoice) => {
 
         let result = GameBoard.checkForWinOrTie();
         if (result == 'X' || result == 'O') {
-            DisplayController.renderEnd({ win: `${result}` });
+            DisplayController.renderEnd({
+                win: `${result}`
+            });
         } else if (result == 'tie') {
-            DisplayController.renderEnd({ tie: `${result}` });
+            DisplayController.renderEnd({
+                tie: `${result}`
+            });
         }
     }
 
@@ -176,7 +257,19 @@ const Player = (player, playerMarkerChoice) => {
 };
 
 
-// Handles display and rendering of the gameboard
+////////////////////////////////////////////////////////////////////////////
+//
+//      DisplayController
+//
+//      Handles display and rendering of the gameboard.
+//      Includes the following public methods:
+//      
+//          init()
+//          reset()
+//          renderBoard()
+//          renderEnd()
+//
+///////////////////////
 let DisplayController = (() => {
 
     let renderBoard = () => {
@@ -194,26 +287,48 @@ let DisplayController = (() => {
         }
     }
 
-    let initialized = false;
-    let init = () => {
-        reset();
+    // Gets called on click of submit options on the intro modal
+    let initializeGame = (playMode) => {
+        reset(); // reset game completely, just in case
+
+        // Add click-ability to the gameboard
         let gameTiles = document.querySelector('#gameboard').children;
         if (initialized == false) {
             for (tile of gameTiles) {
                 let thisTile = tile;
                 let thisTilePos = thisTile.dataset.tileNumber;
-                console.log(tile);
 
                 thisTile.addEventListener('click', () => {
                     person.makeMove(thisTilePos); // change this to make marker optional, can also change what marker they want to use(possibly)
                     thisTile.classList.add('clicked');
                     renderBoard();
-                }, { once: true });
+                }, {
+                    once: true
+                });
             }
         } else {
             console.log('Game already initialized, to start a new game use DisplayController.newGame();')
         }
         initialized = true;
+    }
+
+    let introButtons = () => {
+        let
+    }
+
+    let init = () => {
+        // Do initial button stuff
+        // initializeGame('playerMode')
+        let twoPlayerButton = document.querySelector('#two-player-button');
+        twoPlayerButton.addEventListener('click', () => {
+
+
+        })
+        let onePlayerButton = document.querySelector('#one-player-button');
+        onePlayerButton.addEventListener('click', () => {
+
+        })
+
     }
 
     let renderMessage = (message) => {
@@ -233,8 +348,6 @@ let DisplayController = (() => {
         for (let tile in currentBoard) {
             let newTile = document.createElement('p');
             newTile.classList.add('game-tile');
-
-            console.log(currentBoard[tile].clicked)
             newTile.dataset.tileNumber = `${currentBoard[tile].ID}` // to reference individual tiles
             if (currentBoard[tile].clicked == false) {
                 newTile.innerText = '';
