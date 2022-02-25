@@ -11,6 +11,8 @@
 //     - Add an option to choose between pvp and p v comp
 //     - Add a message output of some sort, to allow for winning and tie 
 //       messages
+//     - rebuild win conditions and messages using new methods
+//     - build buttons and stuff
 // 
 ///////////////////////
 
@@ -61,15 +63,16 @@ let GameBoard = (() => {
     let gameBoard = [];
 
     // gameBoard object format:
-    // gameBoard = {
+    // gameBoard = [
     //      {
     //          ID: 1, (index + 1)
     //          clicked: false, (change on click)
     //          player: player1, (or computer, or player2)
     //          marker: X (or O, or whatever else)
     //      },
-    // }
+    // ]
 
+    let gameMode = 'pvp';
 
     // Initialize gameboard
     let init = () => {
@@ -82,6 +85,14 @@ let GameBoard = (() => {
                 marker: 'unclicked'
             };
         }
+        turn = playerOne.title;
+        turnController = () => {
+            if (turn == playerOne.title) {
+                turn = playerTwo.title;
+            } else if (turn = playerTwo.title) {
+                turn = playerOne.title;
+            }
+        }
         return initGameBoard;
     };
 
@@ -90,24 +101,49 @@ let GameBoard = (() => {
         return gameBoard;
     };
 
+    let turn;
+    let turnController;
+
+    let currentTurn = () => {
+        return turn;
+    }
+
 
     // Add a move to the current game board.
-    // 'pos' refers to the tile that is clicked, referenced by the data-tile-num attribute
-    // Takes marker (Either 'X' or 'O'), pos (the reference to data-tile-num), and 
-    // player (the player's title)
-    // e.g: Gameboard.addMove('X', 6, 'person')
-    let addMove = (marker, pos, player) => {
-        if (marker == 'X' || marker == 'O') {
-            if (gameBoard[pos - 1].marker == 'unclicked') {
-                gameBoard[pos - 1].player = player;
-                gameBoard[pos - 1].clicked = true;
-                gameBoard[pos - 1].marker = `${marker}`;
-            } else {
-                console.log('Cannot make that move - someone has already played there');
-            }
-        } else {
-            console.log('Cannot make that move - invalid move');
+    // Is passed the player (as an object)
+    let addMove = (player, position) => {
+        let currentPlayer;
+
+        if (player == 'playerOne') {
+            currentPlayer = playerOne;
+        } else if (player == 'playerTwo') {
+            currentPlayer = playerTwo;
         }
+        marker = currentPlayer.marker;
+        playerTitle = currentPlayer.title;
+        console.log(playerTitle);
+
+        if (gameBoard[position - 1].marker == 'unclicked') {
+            gameBoard[position - 1].player = playerTitle;
+            gameBoard[position - 1].clicked = true;
+            gameBoard[position - 1].marker = `${marker}`;
+        } else {
+            console.log('Cannot make that move - someone has already played there');
+        }
+
+        turnController();
+
+        // let result = GameBoard.checkForWinOrTie();
+        // if (result == 'X' || result == 'O') {
+        //     DisplayController.renderEnd({
+        //         win: `${result}`
+        //     });
+        // } else if (result == 'tie') {
+        //     DisplayController.renderEnd({
+        //         tie: `${result}`
+        //     });
+        // }
+
     };
 
     // Winning combinations of any given game of tic-tac-toe for a 3x3 grid
@@ -122,56 +158,42 @@ let GameBoard = (() => {
         cross2: [3, 5, 7],
     };
 
-    // These are both pretty self explanatory
-    let equalToX = (marker) => {
-        if (marker == 'X') {
-            return true;
-        } else {
-            return false;
-        }
-    };
-
-    let equalToO = (marker) => {
-        if (marker == 'O') {
-            return true;
-        } else {
-            return false;
-        }
-    };
 
 
-    // checks for win or tie  ( ͡° ͜ʖ ͡°)
-    // returns either 'X', 'O', 'tie', or undefined, depending on result
-    let checkForWinOrTie = () => {
-        for (let key in winningCombos) {
-            let tileVals = [];
-            winningCombos[key].forEach(element => {
-                    // takes the values of each object in the main array (at the winning combinations index corrected value eg 1, 2, 3 -> [0, 1, 2] and push them to the tileVals array for easier access
-                    tileVals.push(gameBoard[element - 1].marker);
-                })
-                // check tileVals for equality. If there is a match in any of these cases, it will result in a win. If there isn't, it will simply continue
-            if (tileVals.every(equalToX)) {
-                currentWinResult = 'X';
-                return currentWinResult;
-            } else if (tileVals.every(equalToO)) {
-                currentWinResult = 'O';
-                return currentWinResult;
-            } else {
-                // checking for unclicked is a little harder because I want the object's marker value to be more descriptive than simply an empty string or ' '. This checks against all of the 'clicked' values of the objects in Gameboard.currentGameBoard() (the main storage array) and checks for a tie
-                let unclickedArray = [];
-                for (let index of gameBoard) {
-                    if (index.marker == 'unclicked') {
-                        unclickedArray.push(true);
-                    } else if (!index.marker == 'unclicked') {
-                        unclickedArray.push(false);
-                    }
-                }
-                if (!unclickedArray.includes(false) && !unclickedArray.includes(true)) {
-                    return 'tie';
-                }
-            }
-        }
-    };
+
+
+    // // checks for win or tie  ( ͡° ͜ʖ ͡°)
+    // // returns either 'X', 'player2.title', 'tie', or undefined, depending on result
+    // let checkForWinOrTie = () => {
+    //     for (let key in winningCombos) {
+    //         let tileVals = [];
+    //         winningCombos[key].forEach(element => {
+    //                 // takes the values of each object in the main array (at the winning combinations index corrected value eg 1, 2, 3 -> [0, 1, 2] and push them to the tileVals array for easier access
+    //                 tileVals.push(gameBoard[element - 1].marker);
+    //             })
+    //             // check tileVals for equality. If there is a match in any of these cases, it will result in a win. If there isn't, it will simply continue
+    //         if (tileVals.every(equalToX)) {
+    //             currentWinResult = 'X';
+    //             return currentWinResult;
+    //         } else if (tileVals.every(equalToO)) {
+    //             currentWinResult = 'O';
+    //             return currentWinResult;
+    //         } else {
+    //             // checking for unclicked is a little harder because I want the object's marker value to be more descriptive than simply an empty string or ' '. This checks against all of the 'clicked' values of the objects in Gameboard.currentGameBoard() (the main storage array) and checks for a tie
+    //             let unclickedArray = [];
+    //             for (let index of gameBoard) {
+    //                 if (index.marker == 'unclicked') {
+    //                     unclickedArray.push(true);
+    //                 } else if (!index.marker == 'unclicked') {
+    //                     unclickedArray.push(false);
+    //                 }
+    //             }
+    //             if (!unclickedArray.includes(false) && !unclickedArray.includes(true)) {
+    //                 return 'tie';
+    //             }
+    //         }
+    //     }
+    // };
 
     // pretty self explanatory
     let reset = () => {
@@ -180,9 +202,10 @@ let GameBoard = (() => {
 
     return {
         currentGameBoard,
+        currentTurn,
         addMove,
-        checkForWinOrTie,
         reset,
+        init,
     }
 })();
 
@@ -205,63 +228,35 @@ let GameBoard = (() => {
 //
 ///////////////////////
 
-const Player = (player, playerMarkerChoice) => {
+const Player = (playerType, playerTitle, playerMarker) => {
 
-    let turn, marker;
+    let type = playerType;
+    let title = playerTitle;
+    let marker = playerMarker;
 
-    let playerChoice = playerMarkerChoice;
-
-    if (player == 'person' ||
-        player == 'computer') {
-        title = player;
-    } else {
-        console.log('Please input a valid player type');
-    }
-
-
-    // 'move' is a string of either 'X' or 'O' (capital x and o)
-    // 'pos' refers to the tile that is clicked, referenced by the data-tile-num attribute
-    // 'player' is the player that made the move, it is immediately passed on to the GameBoard.addMove() function
-    let makeMove = (pos) => {
-        // change the turn - this is a temporary fix to make a turn based approach automatic, but I want to change this in the future based on how the player wants to play (2 player or player v comp);
-        if (turn == 'X') {
-            marker = 'X';
-            turn = 'O';
-        } else if (turn == 'O') {
-            marker = 'O';
-            turn = 'X';
-        } else {
-            marker = playerChoice;
-            playerChoice == 'X' ? turn = 'O' : turn = 'X';
-        }
-
-        GameBoard.addMove(marker, pos, player);
-
-        let result = GameBoard.checkForWinOrTie();
-        if (result == 'X' || result == 'O') {
-            DisplayController.renderEnd({
-                win: `${result}`
-            });
-        } else if (result == 'tie') {
-            DisplayController.renderEnd({
-                tie: `${result}`
-            });
-        }
+    let makeMove = (position) => {
+        GameBoard.addMove(title, position);
     }
 
     return {
         makeMove,
+        type,
         title,
         marker,
     }
 };
 
 
+
+let playerOne = Player('player', 'playerOne', 'X');
+let playerTwo = Player('player', 'playerTwo', 'O');
+
+
 ////////////////////////////////////////////////////////////////////////////
 //
 //      DisplayController
 //
-//      Handles display and rendering of the gameboard.
+//      Handles display and rendering of the gameboard & other visual elements
 //      Includes the following public methods:
 //      
 //          init()
@@ -272,62 +267,104 @@ const Player = (player, playerMarkerChoice) => {
 ///////////////////////
 let DisplayController = (() => {
 
-    let renderBoard = () => {
-        let gameTiles = document.querySelector('#gameboard').children;
+    // gameMode is either 'pvp' or 'pvc'
+    // players in an object that is either [{player1: 'name', markerChoice: 'X'} {player2: 'name', markerChoice: 'O'}] (editable via the first form) or [{player1: 'name', markerChoice: 'X'}]
+    // let startGame = (gameMode, players) {
+    //     if (gameMode == 'pvp') {
 
-        let currentBoard = GameBoard.currentGameBoard();
-        for (let gameTile of gameTiles) {
-            let currentIndex = gameTile.dataset.tileNumber - 1;
-            let currentMarker = currentBoard[currentIndex].marker;
-            if (currentMarker == 'unclicked') {
-                gameTile.innerText = '';
-            } else {
-                gameTile.innerText = currentBoard[currentIndex].marker
-            }
+    //     }
+    // }
+
+    // // render borad needs to be able to differentiate between the individual players, so maybe there's a turn storage somewhere up on the gameboard, and it gets that every time 
+
+    // // render board is called every time there is a move. If the tile has not been clicked, there needs to be an event listener listening for the 
+
+    // let renderBoard = (gameMode) {
+
+    // }
+
+    // renderboard takes the current game and puts it on the screen
+    let generateTile = (tile) => {
+
+        let tileBuild;
+
+        tileBuild = document.createElement('p');
+        tileBuild.dataset.tileNumber = `${tile.ID}`
+        tileBuild.classList.add('game-tile');
+
+        if (tile.clicked == false) {
+            tileBuild.innerText = '';
+        } else if (tile.clicked == true) {
+            tileBuild.classList.add('clicked')
+            tileBuild.innerText = `${tile.marker}`
         }
+
+        return tileBuild
     }
 
-    // Gets called on click of submit options on the intro modal
-    let initializeGame = (playMode) => {
-        reset(); // reset game completely, just in case
 
-        // Add click-ability to the gameboard
-        let gameTiles = document.querySelector('#gameboard').children;
-        if (initialized == false) {
-            for (tile of gameTiles) {
-                let thisTile = tile;
-                let thisTilePos = thisTile.dataset.tileNumber;
+    let renderBoard = () => {
+        let tiles = GameBoard.currentGameBoard(); // array of objects holding the tile data
+        document.querySelector('#gameboard').innerHTML = '';
+        // gameBoard object format:
+        // gameBoard = [
+        //      {
+        //          ID: 1, (index + 1)
+        //          clicked: false, (change on click)
+        //          player: player1, (or computer, or player2)
+        //          marker: X (or O, or whatever else)
+        //      },
+        // ]
 
-                thisTile.addEventListener('click', () => {
-                    person.makeMove(thisTilePos); // change this to make marker optional, can also change what marker they want to use(possibly)
-                    thisTile.classList.add('clicked');
+        for (let tile of tiles) {
+            console.log(tile);
+            let tileHTML = generateTile(tile); // generate the tile
+            document.querySelector('#gameboard').appendChild(tileHTML); // add them to the page with everything made
+
+            // add event listener here if the classlist !contain 'clicked'
+            if (!tileHTML.classList.contains('clicked')) {
+                tileHTML.addEventListener('click', () => {
+                    // on click, get the turn, and add the move according to the position of the tile
+
+                    let thisTurn = GameBoard.currentTurn();
+
+                    if (thisTurn == 'playerOne') {
+                        playerOne.makeMove(tileHTML.dataset.tileNumber);
+                    } else if (thisTurn == 'playerTwo') {
+                        playerTwo.makeMove(tileHTML.dataset.tileNumber);
+                    }
+
+                    tileHTML.classList.add('clicked');
+
                     renderBoard();
+
                 }, {
                     once: true
                 });
+            } else if (tileHTML.classList.contains('clicked')) {
+                tileHTML.classList.remove('game-tile');
+                tileHTML.classList.add('game-end-tile');
             }
-        } else {
-            console.log('Game already initialized, to start a new game use DisplayController.newGame();')
         }
-        initialized = true;
+
     }
 
-    let introButtons = () => {
-        let
-    }
+    // Gets called on click of submit options on the intro modal
+    // let initializeGame = (playMode) => {
+    //     reset(); // reset game completely, just in case
+    //     renderBoard();
+    // }
+
 
     let init = () => {
-        // Do initial button stuff
-        // initializeGame('playerMode')
-        let twoPlayerButton = document.querySelector('#two-player-button');
-        twoPlayerButton.addEventListener('click', () => {
+        renderBoard();
 
-
-        })
-        let onePlayerButton = document.querySelector('#one-player-button');
-        onePlayerButton.addEventListener('click', () => {
-
-        })
+        // let playMode = 'pvp'
+        // if (playMode = 'pvp') {
+        //     initializeGame('pvp');
+        // } else {
+        //     initializeGame('pvc');
+        // }
 
     }
 
@@ -336,27 +373,12 @@ let DisplayController = (() => {
         console.log(message);
     }
 
-    let reset = () => {
-        GameBoard.reset();
-        deleteTiles();
-        generateTiles();
-        renderBoard();
-    }
-
-    let generateTiles = () => {
-        let currentBoard = GameBoard.currentGameBoard();
-        for (let tile in currentBoard) {
-            let newTile = document.createElement('p');
-            newTile.classList.add('game-tile');
-            newTile.dataset.tileNumber = `${currentBoard[tile].ID}` // to reference individual tiles
-            if (currentBoard[tile].clicked == false) {
-                newTile.innerText = '';
-            } else if (currentBoard[tile].clicked == true) {
-                newTile.innerText = `${currentBoard[tile].marker}`
-            }
-            document.querySelector('#gameboard').appendChild(newTile);
-        }
-    }
+    // let reset = () => {
+    //     GameBoard.reset();
+    //     deleteTiles();
+    //     generateTiles();
+    //     renderBoard();
+    // }
 
     let deleteTiles = () => {
         document.querySelector('#gameboard').innerHTML = '';
@@ -370,46 +392,44 @@ let DisplayController = (() => {
 
     // { winner: winner, message: 'string' }
 
-    let renderEnd = (winnerObj) => {
-        // store win array
-        let tempBoard = [...GameBoard.currentGameBoard()];
-        // reset board
-        deleteTiles();
-        tempBoard.forEach((element, index) => {
-            let newTile = document.createElement('p');
-            newTile.classList.add('game-end-tile');
-            newTile.classList.add('game-end-tile');
-            newTile.dataset.tileNumber = `${index + 1}`
-            newTile.innerText = element;
-            document.querySelector('#gameboard').appendChild(newTile);
-        });
-        // display a (non-clickable) win state
+    // let renderEnd = (winnerObj) => {
+    //     // store win array
+    //     let tempBoard = [...GameBoard.currentGameBoard()];
+    //     // reset board
+    //     deleteTiles();
+    //     tempBoard.forEach((element, index) => {
+    //         let newTile = document.createElement('p');
+    //         newTile.classList.add('game-end-tile');
+    //         newTile.classList.add('game-end-tile');
+    //         newTile.dataset.tileNumber = `${index + 1}`
+    //         newTile.innerText = element;
+    //         document.querySelector('#gameboard').appendChild(newTile);
+    //     });
+    //     // display a (non-clickable) win state
 
-        // winner is either {win: 'X'} {win: 'O'} or {tie: 'tie'}
-        for (let key in winnerObj) {
-            if (key == 'win') {
-                if (winnerObj[key] == 'X') {
-                    renderMessage('X won, nice!');
-                } else if (winnerObj[key] == 'O') {
-                    renderMessage('O won, nice!');
-                }
-            } else if (key == 'tie') {
-                renderMessage('Oh wow, it was a tie!');
-            }
-        }
-    }
+    //     // winner is either {win: 'X'} {win: 'O'} or {tie: 'tie'}
+    //     for (let key in winnerObj) {
+    //         if (key == 'win') {
+    //             if (winnerObj[key] == 'X') {
+    //                 renderMessage('X won, nice!');
+    //             } else if (winnerObj[key] == 'O') {
+    //                 renderMessage('O won, nice!');
+    //             }
+    //         } else if (key == 'tie') {
+    //             renderMessage('Oh wow, it was a tie!');
+    //         }
+    //     }
+    // }
 
     return {
         init,
-        reset,
-        renderBoard,
-        renderEnd,
+        // reset,
+        // renderBoard,
+        // renderEnd,
     }
 })();
 
-let person = Player('person', 'X');
-let computer = Player('computer', 'O');
-
 window.onload = function() {
+    GameBoard.reset();
     DisplayController.init();
 }
