@@ -14,29 +14,55 @@
 </head>
 
 <body>
-    <div class="modal hidden">
+    <div class="modal" id="modal">
         <div class="init-message">
             <p>Let's play tic-tac-toe! Click a button below and fill out the info (optional) to get started.</p>
+
             <div class="init-options-container">
-                <button class="init-options" id="two-player-button">2 Player</button>
                 <button class="init-options" id="one-player-button">vs. computer</button>
+                <button class="init-options" id="two-player-button">2 Player</button>
             </div>
-            <div id="two-player-options hidden">
-                <form>
-                    <input type="text">
-                    <input type="text">
+
+            <div class="one-player-options hidden">
+                <form class="one-player-options-form">
+                    <label for="one-player-player-one-info" class="form-label">P1:</label>
+                    <input type="text" id="one-player-player-one-info" placeholder="Player One">
+                    <label for="one-player-player-one-mark" class="form-label">Mark:</label>
+                    <input type="text" id="one-player-player-one-mark" class="mark-input" placeholder="X" maxlength="1">
                 </form>
             </div>
-            <div id="one-player-options hidden">
 
+            <div class="two-player-options hidden">
+                <form class="two-player-options-form">
+
+                    <label for="two-player-player-one-info" class="form-label">P1:</label>
+                    <input type="text" id="two-player-player-one-info" placeholder="Player One">
+                    <label for="two-player-player-one-mark" class="form-label">Mark:</label>
+                    <input type="text" id="two-player-player-one-mark" class="mark-input" placeholder="X" maxlength="1">
+
+                    <label for="two-player-player-two-info" class="form-label">P2:</label>
+                    <input type="text" id="two-player-player-two-info" placeholder="Player Two">
+                    <label for="two-player-player-two-mark" class="form-label">Mark:</label>
+                    <input type="text" id="two-player-player-two-mark" class="mark-input" placeholder="O" maxlength="1">
+                </form>
             </div>
 
+            <div class="init-options-submit hidden">
+                <button id="start-game-button">Start Game!</button>
+            </div>
         </div>
+
         <div class="end-message hidden">
-            <p>
-                Hi there! this is just some placeholder text to fill the space. Lalalalala
+            <p id="round-result">
+                Wow! `${playerOne}` won this game, click below to play again
             </p>
+
+            <div class="end-button-container">
+                <button id="new-game-button">New Game!</button>
+                <button id="new-round-button">New Round!</button>
+            </div>
         </div>
+
     </div>
 
     <header>

@@ -4,9 +4,9 @@
 //     - Add documentation and explanatory comments to DisplayController
 //     - Update Player() to make it more discernable who is making moves.
 //          - maybe for now, have the computer make random playable moves
-//          - include custom 'marker' input for players (have comp default 
-//            to 'O' unless player wants to change it or make their marker 
-//            'O' [in that case make the marker default to 'X])
+//          - include custom 'mark' input for players (have comp default 
+//            to 'O' unless player wants to change it or make their mark 
+//            'O' [in that case make the mark default to 'X])
 //          - include name customization
 //     - Add an option to choose between pvp and p v comp
 //     - Add a message output of some sort, to allow for winning and tie 
@@ -17,7 +17,8 @@
 ///////////////////////
 
 
-
+let playerOne;
+let playerTwo;
 
 
 
@@ -41,12 +42,12 @@
 //                      attribute
 //                  clicked: false,
 //                  player: 'unclicked', -- changes to the player's title
-//                  marker: 'unclicked' -- changes to the players' chosen 
-//                          marker
+//                  mark: 'unclicked' -- changes to the players' chosen 
+//                          mark
 //              }
 //      addMove():
 //          - adds a move to the gameboard.
-//          - Takes marker (Either 'X' or 'O'), pos (the reference to 
+//          - Takes mark (Either 'X' or 'O'), pos (the reference to 
 //            data-tile-num), and player (the player's title)
 //      checkForWinOrTie():
 //          - checks current game board for a potential win or tie. 
@@ -68,7 +69,7 @@ let GameBoard = (() => {
     //          ID: 1, (index + 1)
     //          clicked: false, (change on click)
     //          player: player1, (or computer, or player2)
-    //          marker: X (or O, or whatever else)
+    //          mark: X (or O, or whatever else)
     //      },
     // ]
 
@@ -82,16 +83,8 @@ let GameBoard = (() => {
                 ID: (i + 1),
                 clicked: false,
                 player: 'unclicked',
-                marker: 'unclicked'
+                mark: 'unclicked'
             };
-        }
-        turn = playerOne.title;
-        turnController = () => {
-            if (turn == playerOne.title) {
-                turn = playerTwo.title;
-            } else if (turn = playerTwo.title) {
-                turn = playerOne.title;
-            }
         }
         return initGameBoard;
     };
@@ -119,14 +112,13 @@ let GameBoard = (() => {
         } else if (player == 'playerTwo') {
             currentPlayer = playerTwo;
         }
-        marker = currentPlayer.marker;
+        mark = currentPlayer.mark;
         playerTitle = currentPlayer.title;
-        console.log(playerTitle);
 
-        if (gameBoard[position - 1].marker == 'unclicked') {
+        if (gameBoard[position - 1].mark == 'unclicked') {
             gameBoard[position - 1].player = playerTitle;
             gameBoard[position - 1].clicked = true;
-            gameBoard[position - 1].marker = `${marker}`;
+            gameBoard[position - 1].mark = `${mark}`;
         } else {
             console.log('Cannot make that move - someone has already played there');
         }
@@ -158,6 +150,26 @@ let GameBoard = (() => {
         cross2: [3, 5, 7],
     };
 
+    //  ['Computer', 'Tie', 'Jared', 'Jared', 'Computer', etc....]
+    //
+
+    let gameResults = [];
+
+    let startNewGame = (gameMode, playerOneName, playerOnemark, playerTwoName, playerTwomark) => {
+        playerOne = Player('player', playerOneName, playerOnemark);
+
+        if (gameMode == 'one-player') {
+            playerTwo = Player('computer', playerTwoName, playerTwomark);
+        } else if (gameMode == 'two-player') {
+            playerTwo = Player('player', playerTwoName, playerTwomark);
+        }
+        init();
+    }
+
+    let startNewRound = () => {
+
+    }
+
 
 
 
@@ -169,7 +181,7 @@ let GameBoard = (() => {
     //         let tileVals = [];
     //         winningCombos[key].forEach(element => {
     //                 // takes the values of each object in the main array (at the winning combinations index corrected value eg 1, 2, 3 -> [0, 1, 2] and push them to the tileVals array for easier access
-    //                 tileVals.push(gameBoard[element - 1].marker);
+    //                 tileVals.push(gameBoard[element - 1].mark);
     //             })
     //             // check tileVals for equality. If there is a match in any of these cases, it will result in a win. If there isn't, it will simply continue
     //         if (tileVals.every(equalToX)) {
@@ -179,12 +191,12 @@ let GameBoard = (() => {
     //             currentWinResult = 'O';
     //             return currentWinResult;
     //         } else {
-    //             // checking for unclicked is a little harder because I want the object's marker value to be more descriptive than simply an empty string or ' '. This checks against all of the 'clicked' values of the objects in Gameboard.currentGameBoard() (the main storage array) and checks for a tie
+    //             // checking for unclicked is a little harder because I want the object's mark value to be more descriptive than simply an empty string or ' '. This checks against all of the 'clicked' values of the objects in Gameboard.currentGameBoard() (the main storage array) and checks for a tie
     //             let unclickedArray = [];
     //             for (let index of gameBoard) {
-    //                 if (index.marker == 'unclicked') {
+    //                 if (index.mark == 'unclicked') {
     //                     unclickedArray.push(true);
-    //                 } else if (!index.marker == 'unclicked') {
+    //                 } else if (!index.mark == 'unclicked') {
     //                     unclickedArray.push(false);
     //                 }
     //             }
@@ -195,17 +207,18 @@ let GameBoard = (() => {
     //     }
     // };
 
-    // pretty self explanatory
+    // reset the board by re-initializing all of the tiles
     let reset = () => {
         gameBoard = init();
     }
 
     return {
+        startNewGame,
+        startNewRound,
+        addMove,
         currentGameBoard,
         currentTurn,
-        addMove,
         reset,
-        init,
     }
 })();
 
@@ -224,15 +237,15 @@ let GameBoard = (() => {
 // 
 //          makeMove
 //          title
-//          marker
+//          mark
 //
 ///////////////////////
 
-const Player = (playerType, playerTitle, playerMarker) => {
+const Player = (playerType, playerTitle, playermark) => {
 
     let type = playerType;
     let title = playerTitle;
-    let marker = playerMarker;
+    let mark = playermark;
 
     let makeMove = (position) => {
         GameBoard.addMove(title, position);
@@ -242,14 +255,9 @@ const Player = (playerType, playerTitle, playerMarker) => {
         makeMove,
         type,
         title,
-        marker,
+        mark,
     }
 };
-
-
-
-let playerOne = Player('player', 'playerOne', 'X');
-let playerTwo = Player('player', 'playerTwo', 'O');
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -268,7 +276,7 @@ let playerTwo = Player('player', 'playerTwo', 'O');
 let DisplayController = (() => {
 
     // gameMode is either 'pvp' or 'pvc'
-    // players in an object that is either [{player1: 'name', markerChoice: 'X'} {player2: 'name', markerChoice: 'O'}] (editable via the first form) or [{player1: 'name', markerChoice: 'X'}]
+    // players in an object that is either [{player1: 'name', markChoice: 'X'} {player2: 'name', markChoice: 'O'}] (editable via the first form) or [{player1: 'name', markChoice: 'X'}]
     // let startGame = (gameMode, players) {
     //     if (gameMode == 'pvp') {
 
@@ -296,12 +304,136 @@ let DisplayController = (() => {
             tileBuild.innerText = '';
         } else if (tile.clicked == true) {
             tileBuild.classList.add('clicked')
-            tileBuild.innerText = `${tile.marker}`
+            tileBuild.innerText = `${tile.mark}`
         }
 
         return tileBuild
     }
 
+    let toggleModal = () => {
+        let modal = document.querySelector('#modal');
+        modal.classList.toggle('hidden');
+        if (modal.classList.contains('hidden')) {
+            return 'hidden'
+        } else {
+            return 'visible'
+        };
+    }
+
+
+    //  needs to be able to take the form on page, attach all needed functions to the submit buttons ()
+    let showIntro = () => {
+        let introP1Button = document.querySelector('#one-player-button');
+        introP1Button.addEventListener('click', () => {
+            showGamemode('one-player');
+        })
+
+        let introP2Button = document.querySelector('#two-player-button');
+        introP2Button.addEventListener('click', () => {
+            showGamemode('two-player');
+        })
+
+    }
+
+    let submitOnePlayer = () => {
+        let p1Name = document.querySelector('#one-player-player-one-info').value;
+        let p1Mark = document.querySelector('#one-player-player-two-mark').value;
+        if (p1Name == '') { p1Name = 'Player One'; };
+        if (p1Mark == '') { p1Mark = 'X' };
+
+        let p2Name = 'Computer';
+        let p2Mark;
+        if (p1Mark == 'O') {
+            p2Mark = 'X';
+        } else {
+            p2Mark = 'O';
+        }
+
+        startGame('one-player', p1Name, p2Name);
+        toggleModal();
+    }
+
+    let submitTwoPlayer = () => {
+        let p1Name = document.querySelector('#two-player-player-one-info').value;
+        if (p1Name == '') { p1Name = 'Player One'; };
+        let p2Name = document.querySelector('#two-player-player-two-info').value;
+        if (p2Name == '') { p2Name = 'Player Two'; };
+
+        startGame('two-player', p1Name, p2Name);
+        toggleModal();
+    }
+
+    let showGamemode = (gameMode) => {
+        let submitOptionsButton = document.querySelector('.init-options-submit');
+        let onePlayerOptions = document.querySelector('.one-player-options');
+        let twoPlayerOptions = document.querySelector('.two-player-options');
+
+        submitOptionsButton.classList.remove('hidden');
+
+        if (gameMode == 'one-player') { // for one player games
+            // display stuff
+            // if one player options are hidden (the default), clear it and show it
+            // if two player options are shown, hide it
+            if (onePlayerOptions.classList.contains('hidden')) {
+                document.querySelector('#one-player-player-one-info').value = ''; // Input field
+                document.querySelector('#one-player-player-one-mark').value = ''
+                onePlayerOptions.classList.remove('hidden');
+            }
+            if (!twoPlayerOptions.classList.contains('hidden')) {
+                twoPlayerOptions.classList.add('hidden');
+            }
+
+
+            // submit button stuff
+            if (submitOptionsButton.getAttribute('listener' == 'true')) {
+                // check if there's an event listener on the submit button & remove if necessary
+                submitOptionsButton.removeEventListener('click', submitTwoPlayer);
+            }
+            submitOptionsButton.addEventListener('click', submitOnePlayer); //add event listener to submit button
+
+
+        } else if (gameMode == 'two-player') {
+            // display stuff
+            // if two player options are hidden (the default), clear it and show it
+            // if one player options are shown, clear it and hide it
+            if (twoPlayerOptions.classList.contains('hidden')) {
+                document.querySelector('#two-player-player-one-info').value = ''; // clear input fields
+                document.querySelector('#two-player-player-one-mark').value = '';
+                document.querySelector('#two-player-player-two-info').value = '';
+                document.querySelector('#two-player-player-two-mark').value = '';
+                twoPlayerOptions.classList.remove('hidden');
+            }
+            if (!onePlayerOptions.classList.contains('hidden')) {
+                onePlayerOptions.classList.add('hidden');
+            }
+
+            // same things as above, but reversed
+            if (submitOptionsButton.getAttribute('listener' == 'true')) {
+                submitOptionsButton.removeEventListener('click', submitOnePlayer);
+            }
+
+            submitOptionsButton.addEventListener('click', () => {
+                // Error handling logic, the two players cannot have the same mark. It checks against the defaults as well
+                let twoPP1Mark = document.querySelector('#two-player-player-one-mark').value;
+                let twoPP1MarkDefault = 'X';
+                let twoPP2Mark = document.querySelector('#one-player-player-one-mark').value;
+                let twoPP2MarkDefault = 'O';
+
+                if (twoPP1Mark == twoPP2MarkDefault) {
+                    if (twoPP1Mark == twoPP2Mark) {
+                        // display error, both players cannot have the same marker
+                    }
+                } else if (twoPP2Mark == twoPP1MarkDefault) {
+                    if (twoPP2Mark == twoPP1Mark) {
+                        // display error, both players cannot have the same marker
+                    }
+                } else {
+                    submitTwoPlayer();
+                }
+            });
+        }
+
+    }
 
     let renderBoard = () => {
         let tiles = GameBoard.currentGameBoard(); // array of objects holding the tile data
@@ -312,12 +444,11 @@ let DisplayController = (() => {
         //          ID: 1, (index + 1)
         //          clicked: false, (change on click)
         //          player: player1, (or computer, or player2)
-        //          marker: X (or O, or whatever else)
+        //          mark: X (or O, or whatever else)
         //      },
         // ]
 
         for (let tile of tiles) {
-            console.log(tile);
             let tileHTML = generateTile(tile); // generate the tile
             document.querySelector('#gameboard').appendChild(tileHTML); // add them to the page with everything made
 
@@ -421,8 +552,14 @@ let DisplayController = (() => {
     //     }
     // }
 
+
+    let showEndOfRound = () => {
+        let endTarget = document.querySelector('#round-result');
+    }
+
     return {
         init,
+        showIntro,
         // reset,
         // renderBoard,
         // renderEnd,
@@ -431,5 +568,5 @@ let DisplayController = (() => {
 
 window.onload = function() {
     GameBoard.reset();
-    DisplayController.init();
+    DisplayController.showIntro();
 }
