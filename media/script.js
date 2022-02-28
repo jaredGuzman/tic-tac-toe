@@ -566,12 +566,7 @@ let DisplayController = (() => {
         submitOptionsButtonContainer.classList.remove('hidden');
         submitOptionsButton.classList.remove('hidden');
 
-        // remove event listeners to prevent multiple firings
-        if (submitOptionsButton.getAttribute('listener' == 'true')) {
-            // check if there's an event listener on the submit button & remove if necessary
-            submitOptionsButton.removeEventListener('click', submitOnePlayer);
-            submitOptionsButton.removeEventListener('click', submitTwoPlayer);
-        }
+        console.log(gameMode);
 
         if (gameMode == 'One Player') { // for one player games
             // display stuff
