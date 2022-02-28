@@ -53,14 +53,149 @@ let GameBoard = (() => {
     // Add a move to the current game board.
     // Is passed the player (as an object)
     let addMove = (name, position, mark, title) => {
-        if (gameBoard[position - 1].mark == 'unclicked') {
-            // add the proper attributes to the gameboard
-            gameBoard[position - 1].player = name;
-            gameBoard[position - 1].clicked = 'clicked';
-            gameBoard[position - 1].mark = `${mark}`;
-            gameBoard[position - 1].title = title;
-        } else {
-            console.log('Cannot make that move - someone has already played there');
+        if (gameType == 'One Player' && name == 'Computer') {
+            let gameboard = GameBoard.currentGameBoard();
+
+            let simpleBoard = [];
+
+            for (let tile of gameboard) {
+                if (tile.clicked == 'unclicked') {
+                    simpleBoard.push('_');
+                } else {
+                    simpleBoard.push(`${tile.mark}`);
+                }
+            }
+
+            let p1Mark = playerOne.mark;
+            let p2Mark = playerTwo.mark;
+
+
+            // return 0 for tie or no win, +10 for p2Mark win, & -10 for p1Mark win
+            let evaluate = (board) => {
+                for (let [key, value] of Object.entries(winningCombos)) {
+                    let arrayToCheck = [...value];
+                    // check for equal to p1Mark
+
+                    let isEqualToP1Mark = [];
+                    let isEqualToP2Mark = [];
+                    for (let i = 0; i < arrayToCheck.length; i++) {
+                        if (board[arrayToCheck[i] - 1] == p1Mark) {
+                            isEqualToP1Mark.push(board[arrayToCheck[i] - 1]);
+                        } else if (board[arrayToCheck[i] - 1] == p2Mark) {
+                            isEqualToP2Mark.push(board[arrayToCheck[i] - 1]);
+                        }
+                    }
+
+                    if (isEqualToP1Mark.length == 3) {
+                        return -10;
+                    } else if (isEqualToP2Mark.length == 3) {
+                        return 10;
+                    }
+                }
+                return 0;
+            };
+
+            // works with a more simplified board 
+            let minimax = (board, depth, isMaximizing) => {
+
+                let score = evaluate(board);
+
+                let movesLeft = movesLeftToMake(board);
+
+                if (score == 10) {
+                    return +10;
+                } else if (score == -10) {
+                    return -10;
+                } else if (movesLeft == false || depth == 5) {
+                    return 0;
+                }
+
+                if (isMaximizing) {
+                    let bestValue = -1000;
+                    board.forEach((element, index) => {
+                        if (element == '_') {
+                            // Insert the maximizer's move
+                            board[index] = p2Mark;
+                            // Recursively call and choose the max value
+                            bestValue = Math.max(bestValue, minimax(board, depth + 1, !isMaximizing));
+                            // Undo the move
+                            board[index] = '_';
+                        }
+                        // console.log(bestValue);
+                    });
+                    return bestValue - depth;
+                } else { //minimizer's move
+                    let bestValue = 1000;
+                    board.forEach((element, index) => {
+                        if (element == '_') {
+                            // Insert the maximizer's move
+                            board[index] = p1Mark;
+                            // Recursively call and choose the max value
+                            bestValue = Math.min(bestValue, minimax(board, depth + 1, !isMaximizing));
+                            // Undo the move
+                            board[index] = '_';
+                        }
+                    });
+                    return bestValue + depth;
+                }
+
+
+            };
+
+            let movesLeftToMake = (board) => {
+                if (board.includes('_')) {
+                    return true;
+                } else {
+                    return false;
+                }
+            };
+
+            // Best move will be the best possible move's ID (aka the tile position, or in array terms array[i-1])
+            let findBestMove = (board) => {
+                let bestValue = -1000;
+                let bestMove = -1;
+
+                board.forEach((element, index) => {
+                    let thisMove = index;
+                    if (element == '_') {
+                        board[index] = p2Mark;
+                        // Recursively call and choose the max value
+                        let thisValue = minimax(board, 0, false);
+                        // Undo the move
+                        board[index] = '_';
+                        if (thisValue > bestValue) {
+                            bestValue = thisValue;
+                            bestMove = thisMove;
+                        }
+                    }
+
+                });
+                return bestMove + 1;
+            };
+
+            let bestPosition = findBestMove(simpleBoard);
+            console.log(bestPosition);
+
+            if (gameBoard[bestPosition - 1].mark == 'unclicked') {
+                // add the proper attributes to the gameboard
+                gameBoard[bestPosition - 1].player = name;
+                gameBoard[bestPosition - 1].clicked = 'clicked';
+                gameBoard[bestPosition - 1].mark = `${mark}`;
+                gameBoard[bestPosition - 1].title = title;
+            } else {
+                console.log('Cannot make that move - someone has already played there');
+            }
+
+        } else if (gameType == 'Two Player' || name != 'Computer') {
+            if (gameBoard[position - 1].mark == 'unclicked') {
+                // add the proper attributes to the gameboard
+                gameBoard[position - 1].player = name;
+                gameBoard[position - 1].clicked = 'clicked';
+                gameBoard[position - 1].mark = `${mark}`;
+                gameBoard[position - 1].title = title;
+            } else {
+                console.log('Cannot make that move - someone has already played there');
+            }
         }
         toggleTurn();
 
@@ -164,13 +299,12 @@ let GameBoard = (() => {
                     // First condition is obvious, but second also checks for an empty array
                     return 'Tie';
                 }
-                DisplayController.renderBoard();
             }
         }
     };
 
     // reset the board by re-initializing all of the tiles
-    let deBugReset = () => {
+    let reset = () => {
         gameBoard = init();
     };
 
@@ -181,7 +315,6 @@ let GameBoard = (() => {
         currentGameBoard,
         currentTurn,
         currentStatus,
-        deBugReset,
     };
 })();
 
@@ -229,48 +362,13 @@ const Player = (playerType, playerName, playerMark, playerTitle) => {
     let title = playerTitle;
     let makeMove;
 
-    let winningCombos = {
-        row1: [1, 2, 3],
-        row2: [4, 5, 6],
-        row3: [7, 8, 9],
-        col1: [1, 4, 7],
-        col2: [2, 5, 8],
-        col3: [3, 6, 9],
-        cross1: [1, 5, 9],
-        cross2: [3, 5, 7],
-    };
-
-
     if (type == 'player') {
         makeMove = (position) => {
             GameBoard.addMove(name, position, mark, title);
+            DisplayController.renderBoard();
         };
     } else if (type == 'computer') {
         makeMove = () => {
-            let gameboard = GameBoard.currentGameBoard();
-
-            let simpleBoard = [];
-            let p1Mark = playerOne.mark;
-            let p2Mark = playerTwo.mark;
-
-            let choice;
-
-            // gameBoard = [
-            //      {
-            //          ID: 1, (index + 1)
-            //          clicked: false, (change on click)
-            //          player: player1, (or computer, or player2)
-            //          mark: X (or O, or whatever else)
-            //      },
-            // ]
-
-            for (let tile of gameboard) {
-                if (tile.clicked == 'unclicked') {
-                    simpleBoard.push('_');
-                } else {
-                    simpleBoard.push(`${tile.mark}`);
-                }
-            }
 
             let currentAvailableTiles = [];
             let currentBoard = GameBoard.currentGameBoard();
@@ -279,122 +377,11 @@ const Player = (playerType, playerName, playerMark, playerTitle) => {
                     currentAvailableTiles.push(gameTile.ID);
                 }
             }
-
-            // return 0 for tie or no win, +10 for p2Mark win, & -10 for p1Mark win
-            let evaluate = (board) => {
-                for (let value of Object.entries(winningCombos)) {
-                    let arrayToCheck = [...value];
-                    // check for equal to p1Mark
-
-                    let isEqualToP1Mark = [];
-                    let isEqualToP2Mark = [];
-                    for (let i = 0; i < arrayToCheck.length; i++) {
-                        if (board[arrayToCheck[i] - 1] == p1Mark) {
-                            isEqualToP1Mark.push(board[arrayToCheck[i] - 1]);
-                        } else if (board[arrayToCheck[i] - 1] == p2Mark) {
-                            isEqualToP2Mark.push(board[arrayToCheck[i] - 1]);
-                        }
-                    }
-
-                    if (isEqualToP1Mark.length == 3) {
-                        return -10;
-                    } else if (isEqualToP2Mark.length == 3) {
-                        return 10;
-                    }
-                }
-                return 0;
-            };
-
-
-            let movesLeftToMake = (board) => {
-                if (board.includes('_')) {
-                    return true;
-                } else {
-                    return false;
-                }
-            };
-
-            // works with a more simplified board 
-            let minimax = (board, depth, isMaximizing) => {
-
-                let score = evaluate(board);
-
-                let movesLeft = movesLeftToMake(board);
-
-                if (score == 10) {
-                    return +10;
-                } else if (score == -10) {
-                    return -10;
-                } else if (movesLeft == false) {
-                    return +0;
-                }
-
-                if (isMaximizing) {
-                    let bestValue = -1000;
-                    board.forEach((element, index) => {
-                        if (element == '_') {
-                            // Insert the maximizer's move
-                            board[index] = p2Mark;
-                            // Recursively call and choose the max value
-                            bestValue = Math.max(bestValue, minimax(board, depth + 1, !isMaximizing));
-                            // Undo the move
-                            board[index] = '_';
-                        }
-                        // console.log(bestValue);
-                    });
-                    return bestValue - depth;
-                } else { //minimizer's move
-                    let bestValue = 1000;
-                    board.forEach((element, index) => {
-                        if (element == '_') {
-                            // Insert the maximizer's move
-                            board[index] = p1Mark;
-                            // Recursively call and choose the max value
-                            bestValue = Math.min(bestValue, minimax(board, depth + 1, !isMaximizing));
-                            // Undo the move
-                            board[index] = '_';
-                        }
-                    });
-                    return bestValue + depth;
-                }
-
-
-            };
-
-
-            // Best move will be the best possible move's ID (aka the tile position, or in array terms array[i-1])
-            let findBestMove = (board) => {
-                let bestValue = -1000;
-                let bestMove = -1;
-
-                board.forEach((element, index) => {
-                    let thisMove = index;
-                    if (element == '_') {
-                        board[index] = p2Mark;
-                        // Recursively call and choose the max value
-                        let thisValue = minimax(board, 0, false);
-                        // Undo the move
-                        board[index] = '_';
-                        if (thisValue > bestValue) {
-                            bestValue = thisValue;
-                            bestMove = thisMove;
-                        }
-                    }
-
-                });
-                return bestMove + 1;
-            };
-
             let status = GameBoard.currentStatus();
-
             if (currentAvailableTiles !== undefined && currentAvailableTiles.length != 0 && status != 'finished') {
-
-
                 // MINIMAX ALGORITHM GETS CALLED HERE
-
-                choice = findBestMove(simpleBoard);
-
-                GameBoard.addMove(name, choice, mark, title);
+                GameBoard.addMove(name, 0, mark, title);
+                DisplayController.renderBoard();
             }
         };
     }
@@ -457,23 +444,6 @@ const Player = (playerType, playerName, playerMark, playerTitle) => {
 ///////////////////////
 let DisplayController = (() => {
 
-    // gameMode is either 'pvp' or 'pvc'
-    // players in an object that is either [{player1: 'name', markChoice: 'X'} {player2: 'name', markChoice: 'O'}] (editable via the first form) or [{player1: 'name', markChoice: 'X'}]
-    // let startGame = (gameMode, players) {
-    //     if (gameMode == 'pvp') {
-
-    //     }
-    // }
-
-    // // render borad needs to be able to differentiate between the individual players, so maybe there's a turn storage somewhere up on the gameboard, and it gets that every time 
-
-    // // render board is called every time there is a move. If the tile has not been clicked, there needs to be an event listener listening for the 
-
-    // let renderBoard = (gameMode) {
-
-    // }
-
-
     let toggleModal = () => {
         let modal = document.querySelector('#modal');
         modal.classList.toggle('hidden');
@@ -484,8 +454,6 @@ let DisplayController = (() => {
         }
     };
 
-
-    //  needs to be able to take the form on page, attach all needed functions to the submit buttons ()
     let showIntro = () => {
         let initMessage = document.querySelector('.init-message');
         if (initMessage.classList.contains('hidden')) {
@@ -606,6 +574,7 @@ let DisplayController = (() => {
 
         if (gameMode == 'One Player') { // for one player games
             // display stuff
+
             // if one player options are hidden (the default), clear it and show it
             // if two player options are shown, hide it
             if (onePlayerOptions.classList.contains('hidden')) {
@@ -670,7 +639,7 @@ let DisplayController = (() => {
 
         document.querySelector('#gameboard').innerHTML = '';
 
-        // gameBoard object format:
+        // gameBoard array of objects format:
         // gameBoard = [
         //      {
         //          ID: 1, (index + 1)
@@ -679,6 +648,7 @@ let DisplayController = (() => {
         //          mark: X (or O, or whatever else)
         //      },
         // ]
+
         for (let tile of tiles) {
             let tileHTML = generateTile(tile); // generate the tile
             document.querySelector('#gameboard').appendChild(tileHTML); // add them to the page with everything made
@@ -718,13 +688,6 @@ let DisplayController = (() => {
     let init = () => {
         renderBoard();
     };
-
-    // let reset = () => {
-    //     GameBoard.reset();
-    //     deleteTiles();
-    //     generateTiles();
-    //     renderBoard();
-    // }
 
     let deleteTiles = () => {
         let currentlyRenderedBoard = document.querySelector('#gameboard');
@@ -828,6 +791,5 @@ let DisplayController = (() => {
 })();
 
 window.onload = function() {
-    GameBoard.deBugReset();
     DisplayController.showIntro();
 };
