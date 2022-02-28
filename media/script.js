@@ -33,6 +33,7 @@ let GameBoard = (() => {
     };
 
     let turn = 'Player One';
+
     let toggleTurn = () => {
         if (turn == 'Player One') {
             turn = 'Player Two';
@@ -61,7 +62,6 @@ let GameBoard = (() => {
         } else {
             console.log('Cannot make that move - someone has already played there');
         }
-
         toggleTurn();
 
         let result = checkForWinOrTie();
@@ -113,8 +113,8 @@ let GameBoard = (() => {
     };
 
     let startNewGame = (gameMode, playerOneName, playerOnemark, playerTwoName, playerTwomark) => {
-
         playerOne = Player('player', playerOneName, playerOnemark, 'Player One');
+
         if (gameMode == 'One Player') {
             gameType = 'One Player';
             playerTwo = Player('computer', playerTwoName, playerTwomark, 'Player Two');
@@ -159,7 +159,7 @@ let GameBoard = (() => {
                         unclickedArray.push(false);
                     }
                 }
-                if (!unclickedArray.includes(false) && !unclickedArray.includes(true)) {
+                if (!unclickedArray.includes(true)) {
                     gameStatus = 'finished';
                     // First condition is obvious, but second also checks for an empty array
                     return 'Tie';
@@ -572,20 +572,17 @@ let DisplayController = (() => {
             if (p1Mark == p2MarkDefault) {
                 p2Mark = 'X';
                 GameBoard.startNewGame('Two Player', p1Name, p1Mark, p2Name, p2Mark);
-                hideIntro();
-                hideIntroAllOptions();
-                toggleModal();
             } else if (p2Mark == p1MarkDefault) {
                 p1Mark = 'O';
                 GameBoard.startNewGame('Two Player', p1Name, p1Mark, p2Name, p2Mark);
-                hideIntro();
-                hideIntroAllOptions();
-                toggleModal();
             }
         } else {
             GameBoard.startNewGame('Two Player', p1Name, p1Mark, p2Name, p2Mark);
-            hideIntro();
-            hideIntroAllOptions();
+
+        }
+        hideIntro();
+        hideIntroAllOptions();
+        if (!document.querySelector('#modal').classList.contains('hidden')) {
             toggleModal();
         }
 
