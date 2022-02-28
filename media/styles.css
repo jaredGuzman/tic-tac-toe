@@ -2,7 +2,7 @@
     --font-medium: 'Poppins', sans-serif;
     --dark-blue: #3E7CB1;
     --dark-dark-blue: #08333F;
-    --light-blue: #cde8ff;
+    --light-blue: #c4dcf0;
     --light-blue-darker: #629390;
     --bright-orange: #FF5E5B;
     --white: #ffffff;
@@ -54,9 +54,15 @@ small {
     width: 100vw;
 }
 
-#gameboard {
-    background-color: var(--light-blue);
+.gameboard-container {
+    background-color: var(--dark-blue);
+    border-radius: 32px;
     box-shadow: rgba(0, 0, 0, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
+}
+
+#gameboard {
+    background-color: var(--off-white);
+    border-radius: 16px;
     box-sizing: border-box;
     color: var(--dark-dark-blue);
     display: grid;
@@ -131,7 +137,7 @@ footer>p>a {
 .modal {
     align-items: center;
     display: grid;
-    background-color: rgba(5, 31, 38, 0.5);
+    background-color: rgba(97, 114, 150, 0.5);
     justify-content: center;
     position: absolute;
     height: 100%;
@@ -186,7 +192,25 @@ button:active {
     display: flex;
     justify-content: center;
     width: 100%;
-    margin: 32px 0px;
+    margin: 32px 0px 8px 0px;
+}
+
+
+/* Input error */
+
+.input-error-wrapper {
+    align-items: center;
+    display: grid;
+    height: 32px;
+    justify-content: center;
+    margin: 8px 0px;
+}
+
+#input-error {
+    background-color: var(--bright-orange);
+    border-radius: 16px;
+    color: var(--off-white);
+    padding: 8px 16px;
 }
 
 
@@ -198,7 +222,7 @@ button:active {
     display: grid;
     gap: 8px;
     grid-template-columns: 1fr 3fr 1fr 1fr;
-    margin-bottom: 16px;
+    margin: 16px 0px;
 }
 
 .two-player-options-form>input,
@@ -232,22 +256,17 @@ button:active {
 }
 
 .init-options-submit>button,
-#new-round-button {
+#new-round-button,
+#round-end-new-game-button,
+#round-end-same-game-button {
     background-color: var(--dark-blue);
 }
 
 .init-options-submit>button:hover,
-#new-round-button:hover {
+#new-round-button:hover,
+#round-end-new-game-button:hover,
+#round-end-same-game-button:hover {
     background-color: var(--dark-dark-blue);
-}
-
-#new-game-button {
-    background-color: var(--light-blue-darker);
-    opacity: 0.8;
-}
-
-#new-game-button:hover {
-    opacity: 1;
 }
 
 .end-button-container {
@@ -279,6 +298,9 @@ button:active {
 }
 
 @media only screen and (min-width: 600px) {
+    .gameboard-container {
+        padding: 16px;
+    }
     #gameboard {
         border-radius: 16px;
         height: 300px;

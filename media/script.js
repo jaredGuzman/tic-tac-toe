@@ -1,22 +1,3 @@
-////////////////////////////////////////////////////////////////////////////
-//
-//    TODO:
-//     - Add documentation and explanatory comments to DisplayController
-//     - Update Player() to make it more discernable who is making moves.
-//          - maybe for now, have the computer make random playable moves
-//          - include custom 'mark' input for players (have comp default 
-//            to 'O' unless player wants to change it or make their mark 
-//            'O' [in that case make the mark default to 'X])
-//          - include name customization
-//     - Add an option to choose between pvp and p v comp
-//     - Add a message output of some sort, to allow for winning and tie 
-//       messages
-//     - rebuild win conditions and messages using new methods
-//     - build buttons and stuff
-// 
-///////////////////////
-
-
 let playerOne;
 let playerTwo;
 
@@ -29,39 +10,12 @@ let playerTwo;
 //    The Module used to describe the abstract 'game board' of this game. 
 //    Generally, these functions do not need to be called on their own and
 //    are instead called by the DisplayController according to user input.
-//    Technically, you could play a whole game of tic-tac-toe in the 
-//    console using just these methods.
-//     
-//    It contains the following public methods:
-//
-//      currentGameBoard():
-//          - grabs the current game board and returns an array of objects 
-//            with the following keys and values:
-//              (0){
-//                  ID: (1),  -- used for adding the data-tile-number 
-//                      attribute
-//                  clicked: false,
-//                  player: 'unclicked', -- changes to the player's title
-//                  mark: 'unclicked' -- changes to the players' chosen 
-//                          mark
-//              }
-//      addMove():
-//          - adds a move to the gameboard.
-//          - Takes mark (Either 'X' or 'O'), pos (the reference to 
-//            data-tile-num), and player (the player's title)
-//      checkForWinOrTie():
-//          - checks current game board for a potential win or tie. 
-//          - called after every click and returns either 'X', 'O', 'tie', 
-//            or undefined 
-//            depending on the outcome
-//      reset():
-//          - resets the gameboard
-//          - called on displayController.ini()
 //    
 ///////////////////////
 
 let GameBoard = (() => {
     let gameBoard = [];
+    let gameStatus;
 
     // gameBoard object format:
     // gameBoard = [
@@ -73,154 +27,180 @@ let GameBoard = (() => {
     //      },
     // ]
 
-    let gameMode = 'pvp';
-
-    // Initialize gameboard
-    let init = () => {
-        let initGameBoard = [];
-        for (let i = 0; i < 9; i++) {
-            initGameBoard[i] = {
-                ID: (i + 1),
-                clicked: false,
-                player: 'unclicked',
-                mark: 'unclicked'
-            };
-        }
-        return initGameBoard;
-    };
-
     // Grabs current board and returns an array of objects
     let currentGameBoard = () => {
         return gameBoard;
     };
 
-    let turn;
-    let turnController;
+    let turn = 'Player One';
+    let toggleTurn = () => {
+        if (turn == 'Player One') {
+            turn = 'Player Two';
+        } else if (turn == 'Player Two') {
+            turn = 'Player One';
+        }
+    };
 
     let currentTurn = () => {
         return turn;
-    }
+    };
 
+    let currentStatus = () => {
+        return gameStatus;
+    };
 
     // Add a move to the current game board.
     // Is passed the player (as an object)
-    let addMove = (player, position) => {
-        let currentPlayer;
-
-        if (player == 'playerOne') {
-            currentPlayer = playerOne;
-        } else if (player == 'playerTwo') {
-            currentPlayer = playerTwo;
-        }
-        mark = currentPlayer.mark;
-        playerTitle = currentPlayer.title;
-
+    let addMove = (name, position, mark, title) => {
         if (gameBoard[position - 1].mark == 'unclicked') {
-            gameBoard[position - 1].player = playerTitle;
-            gameBoard[position - 1].clicked = true;
+            // add the proper attributes to the gameboard
+            gameBoard[position - 1].player = name;
+            gameBoard[position - 1].clicked = 'clicked';
             gameBoard[position - 1].mark = `${mark}`;
+            gameBoard[position - 1].title = title;
         } else {
             console.log('Cannot make that move - someone has already played there');
         }
 
-        turnController();
+        toggleTurn();
 
-        // let result = GameBoard.checkForWinOrTie();
-        // if (result == 'X' || result == 'O') {
-        //     DisplayController.renderEnd({
-        //         win: `${result}`
-        //     });
-        // } else if (result == 'tie') {
-        //     DisplayController.renderEnd({
-        //         tie: `${result}`
-        //     });
-        // }
+        let result = checkForWinOrTie();
+        if (result == 'Player One') {
+            DisplayController.renderRoundEnd(playerOne);
+        } else if (result == 'Player Two') {
+            DisplayController.renderRoundEnd(playerTwo);
+        } else if (result == 'Computer') {
+            DisplayController.renderRoundEnd(playerTwo);
+        } else if (result == 'Tie') {
+            DisplayController.renderRoundEnd('Tie');
+        }
 
     };
 
     // Winning combinations of any given game of tic-tac-toe for a 3x3 grid
     let winningCombos = {
-        row1: [1, 2, 3],
-        row2: [4, 5, 6],
-        row3: [7, 8, 9],
         col1: [1, 4, 7],
         col2: [2, 5, 8],
         col3: [3, 6, 9],
         cross1: [1, 5, 9],
         cross2: [3, 5, 7],
+        row1: [1, 2, 3],
+        row2: [4, 5, 6],
+        row3: [7, 8, 9]
     };
 
-    //  ['Computer', 'Tie', 'Jared', 'Jared', 'Computer', etc....]
-    //
+    // Initialize gameboard
+    let init = () => {
+        gameStatus = 'gaming';
+        turn = 'Player One';
+        let initGameBoard = [];
+        for (let i = 0; i < 9; i++) {
+            initGameBoard[i] = {
+                ID: (i + 1),
+                clicked: 'unclicked',
+                player: 'unclicked',
+                mark: 'unclicked',
+                title: 'unclicked'
+            };
+        }
+        return initGameBoard;
+    };
 
-    let gameResults = [];
+    let gameType;
+
+    let currentGameType = () => {
+        return gameType;
+    };
 
     let startNewGame = (gameMode, playerOneName, playerOnemark, playerTwoName, playerTwomark) => {
-        playerOne = Player('player', playerOneName, playerOnemark);
 
-        if (gameMode == 'one-player') {
-            playerTwo = Player('computer', playerTwoName, playerTwomark);
-        } else if (gameMode == 'two-player') {
-            playerTwo = Player('player', playerTwoName, playerTwomark);
+        playerOne = Player('player', playerOneName, playerOnemark, 'Player One');
+        if (gameMode == 'One Player') {
+            gameType = 'One Player';
+            playerTwo = Player('computer', playerTwoName, playerTwomark, 'Player Two');
+        } else if (gameMode == 'Two Player') {
+            gameType = 'Two Player';
+            playerTwo = Player('player', playerTwoName, playerTwomark, 'Player Two');
         }
-        init();
-    }
-
-    let startNewRound = () => {
-
-    }
+        gameBoard = init();
+        DisplayController.init();
+    };
 
 
+    // checks for win or tie  ( ͡° ͜ʖ ͡°)
+    // returns either 'X', 'player2.title', 'tie', or undefined, depending on result
+    let checkForWinOrTie = () => {
+        for (let key in winningCombos) {
+            let tileVals = [];
+            winningCombos[key].forEach((element) => {
+                tileVals.push(gameBoard[element - 1].mark);
+            });
 
+            // This checks for wins against the array of winning combos
+            let isEqual = true;
+            for (let i = 0; i < tileVals.length - 1; i++) {
+                if (tileVals[i] != tileVals[i + 1]) {
+                    isEqual = false;
+                }
+                if (tileVals[i] == 'unclicked' || tileVals[i + 1] == 'unclicked') {
+                    isEqual = false;
+                }
+            }
 
-
-    // // checks for win or tie  ( ͡° ͜ʖ ͡°)
-    // // returns either 'X', 'player2.title', 'tie', or undefined, depending on result
-    // let checkForWinOrTie = () => {
-    //     for (let key in winningCombos) {
-    //         let tileVals = [];
-    //         winningCombos[key].forEach(element => {
-    //                 // takes the values of each object in the main array (at the winning combinations index corrected value eg 1, 2, 3 -> [0, 1, 2] and push them to the tileVals array for easier access
-    //                 tileVals.push(gameBoard[element - 1].mark);
-    //             })
-    //             // check tileVals for equality. If there is a match in any of these cases, it will result in a win. If there isn't, it will simply continue
-    //         if (tileVals.every(equalToX)) {
-    //             currentWinResult = 'X';
-    //             return currentWinResult;
-    //         } else if (tileVals.every(equalToO)) {
-    //             currentWinResult = 'O';
-    //             return currentWinResult;
-    //         } else {
-    //             // checking for unclicked is a little harder because I want the object's mark value to be more descriptive than simply an empty string or ' '. This checks against all of the 'clicked' values of the objects in Gameboard.currentGameBoard() (the main storage array) and checks for a tie
-    //             let unclickedArray = [];
-    //             for (let index of gameBoard) {
-    //                 if (index.mark == 'unclicked') {
-    //                     unclickedArray.push(true);
-    //                 } else if (!index.mark == 'unclicked') {
-    //                     unclickedArray.push(false);
-    //                 }
-    //             }
-    //             if (!unclickedArray.includes(false) && !unclickedArray.includes(true)) {
-    //                 return 'tie';
-    //             }
-    //         }
-    //     }
-    // };
+            if (isEqual) {
+                gameStatus = 'finished';
+                return gameBoard[winningCombos[key][0] - 1].player;
+            } else {
+                let unclickedArray = [];
+                for (let index of gameBoard) {
+                    if (index.mark == 'unclicked') {
+                        unclickedArray.push(true);
+                    } else if (index.mark != 'unclicked') {
+                        unclickedArray.push(false);
+                    }
+                }
+                if (!unclickedArray.includes(false) && !unclickedArray.includes(true)) {
+                    gameStatus = 'finished';
+                    // First condition is obvious, but second also checks for an empty array
+                    return 'Tie';
+                }
+                DisplayController.renderBoard();
+            }
+        }
+    };
 
     // reset the board by re-initializing all of the tiles
-    let reset = () => {
+    let deBugReset = () => {
         gameBoard = init();
-    }
+    };
 
     return {
         startNewGame,
-        startNewRound,
         addMove,
+        currentGameType,
         currentGameBoard,
         currentTurn,
-        reset,
-    }
+        currentStatus,
+        deBugReset,
+    };
 })();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -241,23 +221,225 @@ let GameBoard = (() => {
 //
 ///////////////////////
 
-const Player = (playerType, playerTitle, playermark) => {
+const Player = (playerType, playerName, playerMark, playerTitle) => {
 
     let type = playerType;
+    let name = playerName;
+    let mark = playerMark;
     let title = playerTitle;
-    let mark = playermark;
+    let makeMove;
 
-    let makeMove = (position) => {
-        GameBoard.addMove(title, position);
+    let winningCombos = {
+        row1: [1, 2, 3],
+        row2: [4, 5, 6],
+        row3: [7, 8, 9],
+        col1: [1, 4, 7],
+        col2: [2, 5, 8],
+        col3: [3, 6, 9],
+        cross1: [1, 5, 9],
+        cross2: [3, 5, 7],
+    };
+
+
+    if (type == 'player') {
+        makeMove = (position) => {
+            GameBoard.addMove(name, position, mark, title);
+        };
+    } else if (type == 'computer') {
+        makeMove = () => {
+            let gameboard = GameBoard.currentGameBoard();
+
+            let simpleBoard = [];
+            let p1Mark = playerOne.mark;
+            let p2Mark = playerTwo.mark;
+
+            let choice;
+
+            // gameBoard = [
+            //      {
+            //          ID: 1, (index + 1)
+            //          clicked: false, (change on click)
+            //          player: player1, (or computer, or player2)
+            //          mark: X (or O, or whatever else)
+            //      },
+            // ]
+
+            for (let tile of gameboard) {
+                if (tile.clicked == 'unclicked') {
+                    simpleBoard.push('_');
+                } else {
+                    simpleBoard.push(`${tile.mark}`);
+                }
+            }
+
+            let currentAvailableTiles = [];
+            let currentBoard = GameBoard.currentGameBoard();
+            for (let gameTile of currentBoard) {
+                if (gameTile.clicked == 'unclicked') {
+                    currentAvailableTiles.push(gameTile.ID);
+                }
+            }
+
+            // return 0 for tie or no win, +10 for p2Mark win, & -10 for p1Mark win
+            let evaluate = (board) => {
+                for (let value of Object.entries(winningCombos)) {
+                    let arrayToCheck = [...value];
+                    // check for equal to p1Mark
+
+                    let isEqualToP1Mark = [];
+                    let isEqualToP2Mark = [];
+                    for (let i = 0; i < arrayToCheck.length; i++) {
+                        if (board[arrayToCheck[i] - 1] == p1Mark) {
+                            isEqualToP1Mark.push(board[arrayToCheck[i] - 1]);
+                        } else if (board[arrayToCheck[i] - 1] == p2Mark) {
+                            isEqualToP2Mark.push(board[arrayToCheck[i] - 1]);
+                        }
+                    }
+
+                    if (isEqualToP1Mark.length == 3) {
+                        return -10;
+                    } else if (isEqualToP2Mark.length == 3) {
+                        return 10;
+                    }
+                }
+                return 0;
+            };
+
+
+            let movesLeftToMake = (board) => {
+                if (board.includes('_')) {
+                    return true;
+                } else {
+                    return false;
+                }
+            };
+
+            // works with a more simplified board 
+            let minimax = (board, depth, isMaximizing) => {
+
+                let score = evaluate(board);
+
+                let movesLeft = movesLeftToMake(board);
+
+                if (score == 10) {
+                    return +10;
+                } else if (score == -10) {
+                    return -10;
+                } else if (movesLeft == false) {
+                    return +0;
+                }
+
+                if (isMaximizing) {
+                    let bestValue = -1000;
+                    board.forEach((element, index) => {
+                        if (element == '_') {
+                            // Insert the maximizer's move
+                            board[index] = p2Mark;
+                            // Recursively call and choose the max value
+                            bestValue = Math.max(bestValue, minimax(board, depth + 1, !isMaximizing));
+                            // Undo the move
+                            board[index] = '_';
+                        }
+                        // console.log(bestValue);
+                    });
+                    return bestValue - depth;
+                } else { //minimizer's move
+                    let bestValue = 1000;
+                    board.forEach((element, index) => {
+                        if (element == '_') {
+                            // Insert the maximizer's move
+                            board[index] = p1Mark;
+                            // Recursively call and choose the max value
+                            bestValue = Math.min(bestValue, minimax(board, depth + 1, !isMaximizing));
+                            // Undo the move
+                            board[index] = '_';
+                        }
+                    });
+                    return bestValue + depth;
+                }
+
+
+            };
+
+
+            // Best move will be the best possible move's ID (aka the tile position, or in array terms array[i-1])
+            let findBestMove = (board) => {
+                let bestValue = -1000;
+                let bestMove = -1;
+
+                board.forEach((element, index) => {
+                    let thisMove = index;
+                    if (element == '_') {
+                        board[index] = p2Mark;
+                        // Recursively call and choose the max value
+                        let thisValue = minimax(board, 0, false);
+                        // Undo the move
+                        board[index] = '_';
+                        if (thisValue > bestValue) {
+                            bestValue = thisValue;
+                            bestMove = thisMove;
+                        }
+                    }
+
+                });
+                return bestMove + 1;
+            };
+
+            let status = GameBoard.currentStatus();
+
+            if (currentAvailableTiles !== undefined && currentAvailableTiles.length != 0 && status != 'finished') {
+
+
+                // MINIMAX ALGORITHM GETS CALLED HERE
+
+                choice = findBestMove(simpleBoard);
+
+                GameBoard.addMove(name, choice, mark, title);
+            }
+        };
     }
 
     return {
-        makeMove,
         type,
-        title,
+        name,
         mark,
-    }
+        title,
+        makeMove,
+    };
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -270,7 +452,7 @@ const Player = (playerType, playerTitle, playermark) => {
 //          init()
 //          reset()
 //          renderBoard()
-//          renderEnd()
+//          renderRoundEnd()
 //
 ///////////////////////
 let DisplayController = (() => {
@@ -291,55 +473,64 @@ let DisplayController = (() => {
 
     // }
 
-    // renderboard takes the current game and puts it on the screen
-    let generateTile = (tile) => {
-
-        let tileBuild;
-
-        tileBuild = document.createElement('p');
-        tileBuild.dataset.tileNumber = `${tile.ID}`
-        tileBuild.classList.add('game-tile');
-
-        if (tile.clicked == false) {
-            tileBuild.innerText = '';
-        } else if (tile.clicked == true) {
-            tileBuild.classList.add('clicked')
-            tileBuild.innerText = `${tile.mark}`
-        }
-
-        return tileBuild
-    }
 
     let toggleModal = () => {
         let modal = document.querySelector('#modal');
         modal.classList.toggle('hidden');
         if (modal.classList.contains('hidden')) {
-            return 'hidden'
+            return 'hidden';
         } else {
-            return 'visible'
-        };
-    }
+            return 'visible';
+        }
+    };
 
 
     //  needs to be able to take the form on page, attach all needed functions to the submit buttons ()
     let showIntro = () => {
+        let initMessage = document.querySelector('.init-message');
+        if (initMessage.classList.contains('hidden')) {
+            initMessage.classList.remove('hidden');
+        }
         let introP1Button = document.querySelector('#one-player-button');
         introP1Button.addEventListener('click', () => {
-            showGamemode('one-player');
-        })
+            showGamemode('One Player');
+        });
 
         let introP2Button = document.querySelector('#two-player-button');
         introP2Button.addEventListener('click', () => {
-            showGamemode('two-player');
-        })
+            showGamemode('Two Player');
+        });
 
-    }
+    };
+
+    let hideIntro = () => {
+        let startModal = document.querySelector('.init-message');
+        if (!startModal.classList.contains('hidden')) {
+            startModal.classList.add('hidden');
+        }
+    };
+
+    let hideIntroAllOptions = () => {
+        let onePOptions = document.querySelector('.one-player-options');
+        let twoPOptions = document.querySelector('.two-player-options');
+        let introSubmitButton = document.querySelector('.init-options-submit');
+
+        if (!onePOptions.classList.contains('hidden')) {
+            onePOptions.classList.add('hidden');
+        }
+        if (!twoPOptions.classList.contains('hidden')) {
+            twoPOptions.classList.add('hidden');
+        }
+        if (!introSubmitButton.classList.contains('hidden')) {
+            introSubmitButton.classList.add('hidden');
+        }
+    };
 
     let submitOnePlayer = () => {
         let p1Name = document.querySelector('#one-player-player-one-info').value;
-        let p1Mark = document.querySelector('#one-player-player-two-mark').value;
-        if (p1Name == '') { p1Name = 'Player One'; };
-        if (p1Mark == '') { p1Mark = 'X' };
+        let p1Mark = document.querySelector('#one-player-player-one-mark').value;
+        if (p1Name == '') { p1Name = 'Player One'; }
+        if (p1Mark == '') { p1Mark = 'X'; }
 
         let p2Name = 'Computer';
         let p2Mark;
@@ -349,95 +540,139 @@ let DisplayController = (() => {
             p2Mark = 'O';
         }
 
-        startGame('one-player', p1Name, p2Name);
-        toggleModal();
-    }
+        GameBoard.startNewGame('One Player', p1Name, p1Mark, p2Name, p2Mark);
+        hideIntro();
+        hideIntroAllOptions();
+        if (!document.querySelector('#modal').classList.contains('hidden')) {
+            toggleModal();
+        }
+    };
 
     let submitTwoPlayer = () => {
         let p1Name = document.querySelector('#two-player-player-one-info').value;
-        if (p1Name == '') { p1Name = 'Player One'; };
-        let p2Name = document.querySelector('#two-player-player-two-info').value;
-        if (p2Name == '') { p2Name = 'Player Two'; };
+        if (p1Name == '') { p1Name = 'Player One'; }
+        let p1MarkDefault = 'X';
+        let p1Mark = document.querySelector('#two-player-player-one-mark').value;
+        if (p1Mark == '') { p1Mark = 'X'; }
 
-        startGame('two-player', p1Name, p2Name);
-        toggleModal();
-    }
+        let p2Name = document.querySelector('#two-player-player-two-info').value;
+        if (p2Name == '') { p2Name = 'Player Two'; }
+        let p2MarkDefault = 'O';
+        let p2Mark = document.querySelector('#two-player-player-two-mark').value;
+        if (p2Mark == '') { p2Mark = 'O'; }
+
+        let errorMessage = document.querySelector('.input-error-wrapper');
+
+        if (p1Mark == p2Mark) {
+            if (p1Mark != p2MarkDefault && p2Mark != p1MarkDefault) {
+                if (errorMessage.classList.contains('hidden')) {
+                    errorMessage.classList.remove('hidden');
+                }
+            }
+            if (p1Mark == p2MarkDefault) {
+                p2Mark = 'X';
+                GameBoard.startNewGame('Two Player', p1Name, p1Mark, p2Name, p2Mark);
+                hideIntro();
+                hideIntroAllOptions();
+                toggleModal();
+            } else if (p2Mark == p1MarkDefault) {
+                p1Mark = 'O';
+                GameBoard.startNewGame('Two Player', p1Name, p1Mark, p2Name, p2Mark);
+                hideIntro();
+                hideIntroAllOptions();
+                toggleModal();
+            }
+        } else {
+            GameBoard.startNewGame('Two Player', p1Name, p1Mark, p2Name, p2Mark);
+            hideIntro();
+            hideIntroAllOptions();
+            toggleModal();
+        }
+
+    };
 
     let showGamemode = (gameMode) => {
-        let submitOptionsButton = document.querySelector('.init-options-submit');
+        let submitOptionsButtonContainer = document.querySelector('.init-options-submit');
+        let submitOptionsButton = document.querySelector('#start-game-button');
         let onePlayerOptions = document.querySelector('.one-player-options');
         let twoPlayerOptions = document.querySelector('.two-player-options');
 
+        submitOptionsButtonContainer.classList.remove('hidden');
         submitOptionsButton.classList.remove('hidden');
 
-        if (gameMode == 'one-player') { // for one player games
+        // remove event listeners to prevent multiple firings
+        if (submitOptionsButton.getAttribute('listener' == 'true')) {
+            // check if there's an event listener on the submit button & remove if necessary
+            submitOptionsButton.removeEventListener('click', submitOnePlayer);
+            submitOptionsButton.removeEventListener('click', submitTwoPlayer);
+        }
+
+        if (gameMode == 'One Player') { // for one player games
             // display stuff
             // if one player options are hidden (the default), clear it and show it
             // if two player options are shown, hide it
             if (onePlayerOptions.classList.contains('hidden')) {
                 document.querySelector('#one-player-player-one-info').value = ''; // Input field
-                document.querySelector('#one-player-player-one-mark').value = ''
+                document.querySelector('#one-player-player-one-mark').value = '';
                 onePlayerOptions.classList.remove('hidden');
             }
             if (!twoPlayerOptions.classList.contains('hidden')) {
                 twoPlayerOptions.classList.add('hidden');
             }
 
-
-            // submit button stuff
-            if (submitOptionsButton.getAttribute('listener' == 'true')) {
-                // check if there's an event listener on the submit button & remove if necessary
-                submitOptionsButton.removeEventListener('click', submitTwoPlayer);
-            }
             submitOptionsButton.addEventListener('click', submitOnePlayer); //add event listener to submit button
 
 
-        } else if (gameMode == 'two-player') {
-            // display stuff
-            // if two player options are hidden (the default), clear it and show it
-            // if one player options are shown, clear it and hide it
+        } else if (gameMode == 'Two Player') {
+            // Display form logic
+
+            // Reset fields
+            document.querySelector('#two-player-player-one-info').value = '';
+            document.querySelector('#two-player-player-one-mark').value = '';
+            document.querySelector('#two-player-player-two-info').value = '';
+            document.querySelector('#two-player-player-two-mark').value = '';
+
+            // Change game mode forms
+            // 2 Player
             if (twoPlayerOptions.classList.contains('hidden')) {
-                document.querySelector('#two-player-player-one-info').value = ''; // clear input fields
-                document.querySelector('#two-player-player-one-mark').value = '';
-                document.querySelector('#two-player-player-two-info').value = '';
-                document.querySelector('#two-player-player-two-mark').value = '';
                 twoPlayerOptions.classList.remove('hidden');
             }
             if (!onePlayerOptions.classList.contains('hidden')) {
                 onePlayerOptions.classList.add('hidden');
             }
 
-            // same things as above, but reversed
-            if (submitOptionsButton.getAttribute('listener' == 'true')) {
-                submitOptionsButton.removeEventListener('click', submitOnePlayer);
-            }
-
-            submitOptionsButton.addEventListener('click', () => {
-                // Error handling logic, the two players cannot have the same mark. It checks against the defaults as well
-                let twoPP1Mark = document.querySelector('#two-player-player-one-mark').value;
-                let twoPP1MarkDefault = 'X';
-                let twoPP2Mark = document.querySelector('#one-player-player-one-mark').value;
-                let twoPP2MarkDefault = 'O';
-
-                if (twoPP1Mark == twoPP2MarkDefault) {
-                    if (twoPP1Mark == twoPP2Mark) {
-                        // display error, both players cannot have the same marker
-                    }
-                } else if (twoPP2Mark == twoPP1MarkDefault) {
-                    if (twoPP2Mark == twoPP1Mark) {
-                        // display error, both players cannot have the same marker
-                    }
-                } else {
-                    submitTwoPlayer();
-                }
-            });
+            // Submit button
+            // Reinitialized every time there is a gamemode change
+            submitOptionsButton.addEventListener('click', submitTwoPlayer);
         }
 
-    }
+    };
 
+    let generateTile = (tile) => {
+
+        let tileBuild;
+
+        tileBuild = document.createElement('p');
+        tileBuild.dataset.tileNumber = `${tile.ID}`;
+        tileBuild.classList.add('game-tile');
+
+        if (tile.clicked == false) {
+            tileBuild.innerText = '';
+        } else if (tile.clicked == 'clicked') {
+            tileBuild.classList.add('clicked');
+            tileBuild.innerText = `${tile.mark}`;
+        }
+
+        return tileBuild;
+    };
+
+    // renderboard takes the current game and puts it on the screen. It is called every time there is a move.
     let renderBoard = () => {
+
         let tiles = GameBoard.currentGameBoard(); // array of objects holding the tile data
+
         document.querySelector('#gameboard').innerHTML = '';
+
         // gameBoard object format:
         // gameBoard = [
         //      {
@@ -447,11 +682,9 @@ let DisplayController = (() => {
         //          mark: X (or O, or whatever else)
         //      },
         // ]
-
         for (let tile of tiles) {
             let tileHTML = generateTile(tile); // generate the tile
             document.querySelector('#gameboard').appendChild(tileHTML); // add them to the page with everything made
-
             // add event listener here if the classlist !contain 'clicked'
             if (!tileHTML.classList.contains('clicked')) {
                 tileHTML.addEventListener('click', () => {
@@ -459,15 +692,19 @@ let DisplayController = (() => {
 
                     let thisTurn = GameBoard.currentTurn();
 
-                    if (thisTurn == 'playerOne') {
+                    if (thisTurn == 'Player One') {
                         playerOne.makeMove(tileHTML.dataset.tileNumber);
-                    } else if (thisTurn == 'playerTwo') {
+
+
+                        // COMPUTER MAKES MOVE HERE -- attempts to make it right after the player does
+                        if (playerTwo.type == 'computer') {
+                            playerTwo.makeMove();
+                        }
+                    } else if (thisTurn == 'Player Two') {
                         playerTwo.makeMove(tileHTML.dataset.tileNumber);
                     }
 
                     tileHTML.classList.add('clicked');
-
-                    renderBoard();
 
                 }, {
                     once: true
@@ -478,31 +715,12 @@ let DisplayController = (() => {
             }
         }
 
-    }
-
-    // Gets called on click of submit options on the intro modal
-    // let initializeGame = (playMode) => {
-    //     reset(); // reset game completely, just in case
-    //     renderBoard();
-    // }
+    };
 
 
     let init = () => {
         renderBoard();
-
-        // let playMode = 'pvp'
-        // if (playMode = 'pvp') {
-        //     initializeGame('pvp');
-        // } else {
-        //     initializeGame('pvc');
-        // }
-
-    }
-
-    let renderMessage = (message) => {
-        // Render message on the board, for now I'm just console logging it
-        console.log(message);
-    }
+    };
 
     // let reset = () => {
     //     GameBoard.reset();
@@ -512,61 +730,107 @@ let DisplayController = (() => {
     // }
 
     let deleteTiles = () => {
-        document.querySelector('#gameboard').innerHTML = '';
-    }
+        let currentlyRenderedBoard = document.querySelector('#gameboard');
+        currentlyRenderedBoard.innerHTML = '';
+    };
 
-    // Gets passed an object that determines what state to display
-    // Both: store temp board array, and use that to display a non-clickable board
-    // Win: Display a win message with who won
-    // Tie: Display a tie message
+    let showEnding = () => {
+        let endModal = document.querySelector('#end-message');
+        endModal.classList.remove('hidden');
+    };
+
+    let hideEnding = () => {
+        let endModal = document.querySelector('#end-message');
+        endModal.classList.add('hidden');
+    };
+
+    let endSubmitSameGame = () => {
+        let p1 = playerOne;
+        let p1Name = p1.name;
+        let p1Mark = p1.mark;
+
+        let p2 = playerTwo;
+        let p2Name = p2.name;
+        let p2Mark = p2.mark;
+
+        // preserve players
+        // reset board & 
+        if (GameBoard.currentGameType() == 'One Player') {
+            GameBoard.startNewGame('One Player', p1Name, p1Mark, p2Name, p2Mark);
+        } else {
+            GameBoard.startNewGame('Two Player', p1Name, p1Mark, p2Name, p2Mark);
+        }
+        hideEnding();
+        toggleModal();
+    };
+
+    let endSubmitNewGame = () => {
+        hideEnding();
+        showIntro();
+    };
+
+    let renderRoundEnd = (winner) => {
+        // store win array
+        let tempBoard = [...GameBoard.currentGameBoard()];
+        // reset board
+        deleteTiles();
+        // display a (non-clickable) win state
+        tempBoard.forEach((element, index) => {
+            let newTile = document.createElement('p');
+            newTile.classList.add('game-end-tile');
+            newTile.classList.add('game-end-tile');
+            newTile.dataset.tileNumber = `${index + 1}`;
+            if (element.mark == 'unclicked') {
+                newTile.innerText = '';
+            } else {
+                newTile.innerText = element.mark;
+            }
+            document.querySelector('#gameboard').appendChild(newTile);
+        });
+
+        let modalContainer = document.querySelector('#modal');
+        let endMessageContainer = document.querySelector('#round-result');
+        showEnding();
+        if (modalContainer.classList.contains('hidden')) {
+            toggleModal();
+        }
+
+        // show the end modal component with a customized message depending on the outcome of the game
+        if (winner == 'Tie') {
+            endMessageContainer.innerText = `This one was a tie - nobody won. Click that button below to play again!`;
+        } else if (winner.name == 'Player One') {
+            endMessageContainer.innerText = `${winner.name} won this round! Click below to play again!`;
+        } else if (winner.name == 'Player Two') {
+            endMessageContainer.innerText = `${winner.name} won this round! Click below to play again!`;
+        } else if (winner.name == 'Computer') {
+            endMessageContainer.innerText = `Oh, the computer won this round! Maybe play again by clicking one of the buttons below?`;
+        }
+
+        let submitNewGameButton = document.querySelector('#round-end-new-game-button');
+        if (submitNewGameButton.getAttribute('listener' == 'true')) {
+            submitNewGameButton.removeEventListener('click', endSubmitNewGame);
+        }
+        submitNewGameButton.addEventListener('click', endSubmitNewGame);
 
 
-    // { winner: winner, message: 'string' }
+        // add event listeners to final buttons
+        let submitSameGameButton = document.querySelector('#round-end-same-game-button');
+        if (submitSameGameButton.getAttribute('listener' == 'true')) {
+            submitSameGameButton.removeEventListener('click', endSubmitSameGame);
+        }
+        submitSameGameButton.addEventListener('click', endSubmitSameGame);
 
-    // let renderEnd = (winnerObj) => {
-    //     // store win array
-    //     let tempBoard = [...GameBoard.currentGameBoard()];
-    //     // reset board
-    //     deleteTiles();
-    //     tempBoard.forEach((element, index) => {
-    //         let newTile = document.createElement('p');
-    //         newTile.classList.add('game-end-tile');
-    //         newTile.classList.add('game-end-tile');
-    //         newTile.dataset.tileNumber = `${index + 1}`
-    //         newTile.innerText = element;
-    //         document.querySelector('#gameboard').appendChild(newTile);
-    //     });
-    //     // display a (non-clickable) win state
-
-    //     // winner is either {win: 'X'} {win: 'O'} or {tie: 'tie'}
-    //     for (let key in winnerObj) {
-    //         if (key == 'win') {
-    //             if (winnerObj[key] == 'X') {
-    //                 renderMessage('X won, nice!');
-    //             } else if (winnerObj[key] == 'O') {
-    //                 renderMessage('O won, nice!');
-    //             }
-    //         } else if (key == 'tie') {
-    //             renderMessage('Oh wow, it was a tie!');
-    //         }
-    //     }
-    // }
-
-
-    let showEndOfRound = () => {
-        let endTarget = document.querySelector('#round-result');
-    }
+    };
 
     return {
         init,
         showIntro,
-        // reset,
-        // renderBoard,
-        // renderEnd,
-    }
+        renderBoard,
+        renderRoundEnd,
+    };
 })();
 
 window.onload = function() {
-    GameBoard.reset();
+    GameBoard.deBugReset();
     DisplayController.showIntro();
-}
+};

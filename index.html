@@ -22,6 +22,9 @@
                 <button class="init-options" id="one-player-button">vs. computer</button>
                 <button class="init-options" id="two-player-button">2 Player</button>
             </div>
+            <div class="input-error-wrapper hidden">
+                <small id="input-error">Both players cannot have the same mark!</small>
+            </div>
 
             <div class="one-player-options hidden">
                 <form class="one-player-options-form">
@@ -52,14 +55,13 @@
             </div>
         </div>
 
-        <div class="end-message hidden">
+        <div class="end-message hidden" id="end-message">
             <p id="round-result">
-                Wow! `${playerOne}` won this game, click below to play again
             </p>
 
             <div class="end-button-container">
-                <button id="new-game-button">New Game!</button>
-                <button id="new-round-button">New Round!</button>
+                <button id="round-end-same-game-button">Play the same way</button>
+                <button id="round-end-new-game-button">New game</button>
             </div>
         </div>
 
@@ -69,7 +71,9 @@
         <h1>A Little Game of Tic-Tac-Toe</h1>
     </header>
     <main class="root">
-        <div id="gameboard">
+        <div class="gameboard-container">
+            <div id="gameboard">
+            </div>
         </div>
     </main>
     <footer>
