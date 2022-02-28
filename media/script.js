@@ -24,6 +24,7 @@ let GameBoard = (() => {
     //          clicked: false, (change on click)
     //          player: player1, (or computer, or player2)
     //          mark: X (or O, or whatever else)
+    //          title: Player One or Player Two
     //      },
     // ]
 
@@ -284,7 +285,7 @@ let GameBoard = (() => {
 
             if (isEqual) {
                 gameStatus = 'finished';
-                return gameBoard[winningCombos[key][0] - 1].player;
+                return gameBoard[winningCombos[key][0] - 1].title;
             } else {
                 let unclickedArray = [];
                 for (let index of gameBoard) {
@@ -758,11 +759,11 @@ let DisplayController = (() => {
         // show the end modal component with a customized message depending on the outcome of the game
         if (winner == 'Tie') {
             endMessageContainer.innerText = `This one was a tie - nobody won. Click that button below to play again!`;
-        } else if (winner.name == 'Player One') {
+        } else if (winner.title == 'Player One') {
             endMessageContainer.innerText = `${winner.name} won this round! Click below to play again!`;
-        } else if (winner.name == 'Player Two') {
+        } else if (winner.title == 'Player Two') {
             endMessageContainer.innerText = `${winner.name} won this round! Click below to play again!`;
-        } else if (winner.name == 'Computer') {
+        } else if (winner.title == 'Computer') {
             endMessageContainer.innerText = `Oh, the computer won this round! Maybe play again by clicking one of the buttons below?`;
         }
 
