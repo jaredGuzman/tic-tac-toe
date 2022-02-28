@@ -2,7 +2,6 @@ let playerOne;
 let playerTwo;
 
 
-
 ////////////////////////////////////////////////////////////////////////////
 //
 //    GameBoard 
@@ -28,7 +27,6 @@ let GameBoard = (() => {
     //      },
     // ]
 
-    // Grabs current board and returns an array of objects
     let currentGameBoard = () => {
         return gameBoard;
     };
@@ -264,7 +262,6 @@ let GameBoard = (() => {
 
 
     // checks for win or tie  ( ͡° ͜ʖ ͡°)
-    // returns either 'X', 'player2.title', 'tie', or undefined, depending on result
     let checkForWinOrTie = () => {
         for (let key in winningCombos) {
             let tileVals = [];
@@ -318,23 +315,6 @@ let GameBoard = (() => {
         currentStatus,
     };
 })();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -395,39 +375,6 @@ const Player = (playerType, playerName, playerMark, playerTitle) => {
         makeMove,
     };
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////
