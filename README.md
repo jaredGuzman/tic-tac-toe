@@ -1,6 +1,6 @@
 # tic-tac-toe
 
-Simple little Tic Tac Toe game playable in the browser. You can find the page it's hosted on [here](https://jaredguzman.github.io/tic-tac-toe/)
+Simple little Tic Tac Toe game playable in the browser. You can find the page it's hosted on ☀️ [here](https://jaredguzman.github.io/tic-tac-toe/) ☀️
 
 You can choose between either 1 player mode or two player mode, and optionally set your name and the marker you want to use for the game.
 
